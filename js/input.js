@@ -64,6 +64,14 @@ export class InputHandler {
                     this.selectedTowerType = null;
                 }
                 this.game.ui.update();
+            } else {
+                // Placement failed — if there's a tower here, select it
+                const existing = this.game.towers.getTowerAt(gx, gy);
+                if (existing) {
+                    this.selectedTower = existing;
+                    this.selectedTowerType = null;
+                    this.game.ui.showTowerInfo(existing);
+                }
             }
         } else {
             // Check if clicking on a placed tower

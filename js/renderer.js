@@ -29,13 +29,6 @@ export class Renderer {
         const cx = x + CELL / 2;
         const cy = y + CELL / 2;
 
-        // Platform
-        ctx.fillStyle = '#555';
-        ctx.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
-        ctx.fillStyle = '#666';
-        ctx.fillRect(x + 4, y + 4, CELL - 8, CELL - 8);
-
-        // Color accent ring
         const accentColors = {
             arrow: '#4a7c3f',
             cannon: '#8b5e3c',
@@ -43,26 +36,99 @@ export class Renderer {
             lightning: '#9b59b6',
             sniper: '#c0392b',
         };
-        ctx.strokeStyle = accentColors[tower.type] || '#888';
-        ctx.lineWidth = 1.5;
+        const accent = accentColors[tower.type] || '#888';
+
+        // Outer platform with beveled edges
+        ctx.fillStyle = '#4a4a4a';
+        ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+        // Top/left highlight
+        ctx.fillStyle = '#606060';
+        ctx.fillRect(x + 1, y + 1, CELL - 2, 2);
+        ctx.fillRect(x + 1, y + 1, 2, CELL - 2);
+        // Bottom/right shadow
+        ctx.fillStyle = '#333';
+        ctx.fillRect(x + 1, y + CELL - 3, CELL - 2, 2);
+        ctx.fillRect(x + CELL - 3, y + 1, 2, CELL - 2);
+        // Inner platform — brighter for higher levels
+        const lvlBright = tower.level * 12;
+        const baseR = 88 + lvlBright;
+        const baseG = 88 + lvlBright;
+        const baseB = 88 + lvlBright;
+        ctx.fillStyle = `rgb(${baseR},${baseG},${baseB})`;
+        ctx.fillRect(x + 4, y + 4, CELL - 8, CELL - 8);
+
+        // Color accent ring — thicker and brighter for upgrades
+        const ringWidth = 2 + tower.level;
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = ringWidth;
         ctx.beginPath();
-        ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Corner bolt details
-        ctx.fillStyle = '#888';
-        const boltOffset = 5;
+        // Inner ring
+        if (tower.level > 0) {
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 14 - ringWidth, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Corner bolt details — gold for upgraded towers
+        const boltOffset = 6;
         const corners = [
             [x + boltOffset, y + boltOffset],
             [x + CELL - boltOffset, y + boltOffset],
             [x + boltOffset, y + CELL - boltOffset],
             [x + CELL - boltOffset, y + CELL - boltOffset],
         ];
+        const boltColor = tower.level > 0 ? '#ffd700' : '#777';
+        const boltHighlight = tower.level > 0 ? '#ffe566' : '#999';
         for (const [bx, by] of corners) {
+            ctx.fillStyle = boltColor;
             ctx.beginPath();
-            ctx.arc(bx, by, 1.5, 0, Math.PI * 2);
+            ctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = boltHighlight;
+            ctx.beginPath();
+            ctx.arc(bx - 0.5, by - 0.5, 1.2, 0, Math.PI * 2);
             ctx.fill();
         }
+
+        // Level stars on base — bigger, with glow
+        if (tower.level > 0) {
+            // Star glow background
+            ctx.fillStyle = 'rgba(255,215,0,0.25)';
+            ctx.beginPath();
+            ctx.arc(cx, cy + 15, tower.level * 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffd700';
+            for (let i = 0; i < tower.level; i++) {
+                const sx = cx - (tower.level - 1) * 6 + i * 12;
+                const sy = cy + 15;
+                this.drawMiniStar(ctx, sx, sy, 4);
+                // Star highlight
+                ctx.fillStyle = '#fff8dc';
+                this.drawMiniStar(ctx, sx - 0.5, sy - 0.5, 2);
+                ctx.fillStyle = '#ffd700';
+            }
+        }
+    }
+
+    drawMiniStar(ctx, x, y, r) {
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const a = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+            const px = x + Math.cos(a) * r;
+            const py = y + Math.sin(a) * r;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+            const ia = a + Math.PI / 5;
+            ctx.lineTo(x + Math.cos(ia) * r * 0.4, y + Math.sin(ia) * r * 0.4);
+        }
+        ctx.closePath();
+        ctx.fill();
     }
 
     drawFrame(interpolation) {
@@ -362,45 +428,66 @@ export class Renderer {
             const cx = tower.x;
             const cy = tower.y;
 
-            // Pulsing glow for frost and lightning
-            if (tower.type === 'frost' || tower.type === 'lightning') {
-                const glowAlpha = 0.1 + Math.sin(tower.glowPhase) * 0.06;
-                ctx.fillStyle = tower.type === 'frost'
-                    ? `rgba(91,155,213,${glowAlpha})`
-                    : `rgba(155,89,182,${glowAlpha})`;
+            // Upgrade glow — animated, scales with level
+            if (tower.level > 0) {
+                const glowPulse = 0.12 + Math.sin(tower.glowPhase * 1.5) * 0.06;
+                const glowRadius = 18 + tower.level * 4;
+
+                // Outer glow ring
+                ctx.strokeStyle = `rgba(255,215,0,${glowPulse * 0.7})`;
+                ctx.lineWidth = 1 + tower.level * 0.5;
                 ctx.beginPath();
-                ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+                ctx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Soft radial glow
+                ctx.fillStyle = `rgba(255,215,0,${glowPulse * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(cx, cy, glowRadius - 2, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Rotating sparkle dots for level 2
+                if (tower.level >= 2) {
+                    ctx.fillStyle = `rgba(255,250,200,${0.3 + Math.sin(tower.glowPhase * 2) * 0.2})`;
+                    for (let i = 0; i < 4; i++) {
+                        const a = tower.spinPhase * 0.6 + (Math.PI * 2 * i) / 4;
+                        const sr = glowRadius - 1;
+                        ctx.beginPath();
+                        ctx.arc(cx + Math.cos(a) * sr, cy + Math.sin(a) * sr, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
             }
 
+            // Per-type ambient effects (drawn behind turret, world-space)
+            this.drawTowerAmbient(ctx, tower, cx, cy);
+
             // Recoil offset
-            const recoilAmount = tower.recoilTimer > 0 ? (tower.recoilTimer / 0.12) * 4 : 0;
+            const recoilAmount = tower.recoilTimer > 0 ? (tower.recoilTimer / 0.12) * 5 : 0;
 
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(tower.turretAngle);
 
-            // Apply recoil (shift barrel backward)
             const recoilShift = -recoilAmount;
 
             switch (tower.type) {
                 case 'arrow':
-                    this.drawArrowTurret(ctx, recoilShift);
+                    this.drawArrowTurret(ctx, recoilShift, tower);
                     break;
                 case 'cannon':
-                    this.drawCannonTurret(ctx, recoilShift);
+                    this.drawCannonTurret(ctx, recoilShift, tower);
                     break;
                 case 'frost':
-                    this.drawFrostTurret(ctx, recoilShift);
+                    this.drawFrostTurret(ctx, recoilShift, tower);
                     break;
                 case 'lightning':
-                    this.drawLightningTurret(ctx, recoilShift);
+                    this.drawLightningTurret(ctx, recoilShift, tower);
                     break;
                 case 'sniper':
                     this.drawSniperTurret(ctx, recoilShift, tower);
                     break;
                 default:
-                    // Fallback generic turret
                     ctx.fillStyle = tower.color;
                     ctx.fillRect(-6, -4, 12, 8);
                     ctx.fillRect(4 + recoilShift, -2, 10, 4);
@@ -409,165 +496,492 @@ export class Renderer {
 
             ctx.restore();
 
-            // Level indicator
-            if (tower.level > 0) {
-                ctx.fillStyle = '#ffd700';
-                for (let i = 0; i < tower.level; i++) {
+            // Target mode label below tower
+            const mode = TARGET_MODES[tower.targetMode];
+            const modeColors = { First: '#3498db', Closest: '#2ecc71', Strongest: '#e74c3c', Weakest: '#f39c12' };
+            const modeShort = { First: 'FST', Closest: 'CLS', Strongest: 'STR', Weakest: 'WK' };
+            const modeColor = modeColors[mode] || '#aaa';
+
+            // Background pill
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            const label = modeShort[mode] || mode;
+            ctx.font = 'bold 9px monospace';
+            const tw = ctx.measureText(label).width;
+            const pillW = tw + 6;
+            const pillH = 12;
+            const pillX = cx - pillW / 2;
+            const pillY = cy - CELL / 2 - pillH - 1;
+            ctx.beginPath();
+            ctx.roundRect(pillX, pillY, pillW, pillH, 3);
+            ctx.fill();
+
+            // Label text
+            ctx.fillStyle = modeColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, cx, pillY + pillH / 2);
+        }
+    }
+
+    drawTowerAmbient(ctx, tower, cx, cy) {
+        const sp = tower.spinPhase;
+        const gp = tower.glowPhase;
+
+        if (tower.type === 'frost') {
+            // Frost: pulsing icy aura with rotating snowflake particles
+            const pulse = 0.08 + Math.sin(gp) * 0.05;
+            ctx.fillStyle = `rgba(91,155,213,${pulse})`;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Orbiting ice crystals
+            ctx.fillStyle = 'rgba(170,221,255,0.4)';
+            for (let i = 0; i < 3; i++) {
+                const a = sp * 0.8 + (Math.PI * 2 * i) / 3;
+                const r = 14 + Math.sin(gp + i) * 2;
+                const px = cx + Math.cos(a) * r;
+                const py = cy + Math.sin(a) * r;
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(sp * 2 + i);
+                ctx.fillRect(-1.5, -1.5, 3, 3);
+                ctx.restore();
+            }
+        } else if (tower.type === 'lightning') {
+            // Lightning: pulsing electric aura + crawling arcs
+            const pulse = 0.07 + Math.sin(gp * 1.5) * 0.05;
+            ctx.fillStyle = `rgba(155,89,182,${pulse})`;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sparking arcs around tower
+            ctx.strokeStyle = `rgba(224,176,255,${0.3 + Math.sin(gp * 3) * 0.2})`;
+            ctx.lineWidth = 0.8;
+            for (let i = 0; i < 3; i++) {
+                const a = sp + (Math.PI * 2 * i) / 3;
+                const r = 13;
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(a) * 8, cy + Math.sin(a) * 8);
+                const jx = (Math.random() - 0.5) * 5;
+                const jy = (Math.random() - 0.5) * 5;
+                ctx.lineTo(cx + Math.cos(a) * r + jx, cy + Math.sin(a) * r + jy);
+                ctx.stroke();
+            }
+        } else if (tower.type === 'sniper') {
+            // Sniper: laser sight line when targeting
+            if (tower.target && tower.target.alive) {
+                ctx.strokeStyle = 'rgba(255,50,50,0.15)';
+                ctx.lineWidth = 0.5;
+                ctx.setLineDash([3, 4]);
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(tower.target.x, tower.target.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Target dot on enemy
+                ctx.fillStyle = 'rgba(255,50,50,0.4)';
+                ctx.beginPath();
+                ctx.arc(tower.target.x, tower.target.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (tower.type === 'cannon') {
+            // Cannon: heat shimmer when recently fired
+            if (tower.recoilTimer > 0) {
+                const heat = tower.recoilTimer / 0.12;
+                ctx.fillStyle = `rgba(255,150,50,${heat * 0.12})`;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (tower.type === 'arrow') {
+            // Arrow: subtle wind indicator when idle
+            if (tower.idleTime > 1) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 2; i++) {
+                    const y = cy - 6 + i * 12;
+                    const wave = Math.sin(sp + i * 2) * 4;
                     ctx.beginPath();
-                    ctx.arc(cx - 8 + i * 8, cy + 12, 2, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.moveTo(cx - 8, y);
+                    ctx.quadraticCurveTo(cx + wave, y - 2, cx + 8, y);
+                    ctx.stroke();
                 }
             }
         }
     }
 
-    drawArrowTurret(ctx, recoil) {
-        // Crossbow body
+    drawArrowTurret(ctx, recoil, tower) {
+        // Crossbow body — wooden frame
+        ctx.fillStyle = '#5a4a32';
+        ctx.fillRect(-6, -5, 12, 10);
         ctx.fillStyle = '#4a7c3f';
         ctx.fillRect(-5, -4, 10, 8);
 
-        // Crossbow arms (arc strokes)
+        // Crossbow arms with tension string
         ctx.strokeStyle = '#3a6030';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(0, 0, 8, -1.2, -0.3);
+        ctx.arc(0, 0, 9, -1.3, -0.2);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(0, 0, 8, 0.3, 1.2);
+        ctx.arc(0, 0, 9, 0.2, 1.3);
         ctx.stroke();
 
-        // Bolt barrel
-        ctx.fillStyle = '#5a8c4f';
-        ctx.fillRect(4 + recoil, -1.5, 10, 3);
+        // Bowstring
+        const stringTension = tower.recoilTimer > 0 ? 1 : 3;
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(-1.3) * 9, Math.sin(-1.3) * 9);
+        ctx.quadraticCurveTo(-stringTension, 0, Math.cos(1.3) * 9, Math.sin(1.3) * 9);
+        ctx.stroke();
 
-        // Arrowhead tip
+        // Bolt rail
+        ctx.fillStyle = '#6a9c5f';
+        ctx.fillRect(3 + recoil, -1.5, 11, 3);
+
+        // Metal tip
         ctx.fillStyle = '#ccc';
         ctx.beginPath();
-        ctx.moveTo(14 + recoil, 0);
-        ctx.lineTo(11 + recoil, -2.5);
-        ctx.lineTo(11 + recoil, 2.5);
+        ctx.moveTo(15 + recoil, 0);
+        ctx.lineTo(11 + recoil, -3);
+        ctx.lineTo(11 + recoil, 3);
         ctx.closePath();
+        ctx.fill();
+        // Tip edge highlight
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(15 + recoil, 0);
+        ctx.lineTo(11 + recoil, -3);
+        ctx.stroke();
+
+        // Center mechanism
+        ctx.fillStyle = '#888';
+        ctx.beginPath();
+        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#aaa';
+        ctx.beginPath();
+        ctx.arc(-0.5, -0.5, 1.5, 0, Math.PI * 2);
         ctx.fill();
     }
 
-    drawCannonTurret(ctx, recoil) {
-        // Wide squat body
+    drawCannonTurret(ctx, recoil, tower) {
+        // Reinforced body with armor plates
+        ctx.fillStyle = '#6a4828';
+        ctx.fillRect(-8, -6, 14, 12);
         ctx.fillStyle = '#8b5e3c';
         ctx.fillRect(-7, -5, 12, 10);
 
-        // Wide barrel
-        ctx.fillStyle = '#7a4e2c';
-        ctx.fillRect(3 + recoil, -4, 10, 8);
-
-        // Muzzle ring
-        ctx.strokeStyle = '#5a3e1c';
-        ctx.lineWidth = 1.5;
+        // Barrel — tapered, thick
+        ctx.fillStyle = '#5a3e1c';
         ctx.beginPath();
-        ctx.arc(13 + recoil, 0, 4.5, -Math.PI / 2, Math.PI / 2);
+        ctx.moveTo(3 + recoil, -5);
+        ctx.lineTo(14 + recoil, -3.5);
+        ctx.lineTo(14 + recoil, 3.5);
+        ctx.lineTo(3 + recoil, 5);
+        ctx.closePath();
+        ctx.fill();
+
+        // Barrel highlight stripe
+        ctx.fillStyle = '#7a5e3c';
+        ctx.fillRect(4 + recoil, -1, 10, 2);
+
+        // Muzzle ring (thick)
+        ctx.strokeStyle = '#4a2e1c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(14 + recoil, 0, 4, -Math.PI / 2, Math.PI / 2);
         ctx.stroke();
 
-        // Rivet details
-        ctx.fillStyle = '#aaa';
+        // Muzzle opening
+        ctx.fillStyle = '#222';
         ctx.beginPath();
-        ctx.arc(-4, -3, 1, 0, Math.PI * 2);
+        ctx.arc(14 + recoil, 0, 2.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.beginPath();
-        ctx.arc(-4, 3, 1, 0, Math.PI * 2);
-        ctx.fill();
+
+        // Rivets (4 total)
+        ctx.fillStyle = '#bbb';
+        const rivets = [[-4, -4], [-4, 4], [0, -4], [0, 4]];
+        for (const [rx, ry] of rivets) {
+            ctx.beginPath();
+            ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Smoke wisp after firing
+        if (tower.recoilTimer > 0) {
+            const t = tower.recoilTimer / 0.12;
+            ctx.globalAlpha = t * 0.4;
+            ctx.fillStyle = '#aaa';
+            ctx.beginPath();
+            ctx.arc(16 + recoil + (1 - t) * 6, (Math.random() - 0.5) * 4, 2 + (1 - t) * 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
     }
 
-    drawFrostTurret(ctx, recoil) {
-        // Diamond body
-        ctx.fillStyle = '#5b9bd5';
+    drawFrostTurret(ctx, recoil, tower) {
+        const sp = tower.spinPhase;
+
+        // Rotating outer crystal ring (drawn in turret-local space)
+        ctx.save();
+        ctx.rotate(-tower.turretAngle); // undo turret rotation for world-space spin
+        ctx.strokeStyle = 'rgba(170,221,255,0.3)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 6; i++) {
+            const a = sp * 0.5 + (Math.PI * 2 * i) / 6;
+            const r1 = 9;
+            const r2 = 12;
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(a) * r1, Math.sin(a) * r1);
+            ctx.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+            ctx.stroke();
+        }
+        ctx.restore();
+
+        // Diamond body with gradient look
+        ctx.fillStyle = '#4a8bc5';
         ctx.beginPath();
-        ctx.moveTo(0, -7);
-        ctx.lineTo(6, 0);
-        ctx.lineTo(0, 7);
-        ctx.lineTo(-6, 0);
+        ctx.moveTo(0, -8);
+        ctx.lineTo(7, 0);
+        ctx.lineTo(0, 8);
+        ctx.lineTo(-7, 0);
         ctx.closePath();
         ctx.fill();
 
-        // Inner facet
-        ctx.fillStyle = '#8ac4ff';
+        // Bright facet
+        ctx.fillStyle = '#7bc4ff';
+        ctx.beginPath();
+        ctx.moveTo(0, -8);
+        ctx.lineTo(7, 0);
+        ctx.lineTo(0, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Inner core crystal
+        ctx.fillStyle = '#b0e0ff';
         ctx.beginPath();
         ctx.moveTo(0, -4);
-        ctx.lineTo(3, 0);
+        ctx.lineTo(3.5, 0);
         ctx.lineTo(0, 4);
-        ctx.lineTo(-3, 0);
+        ctx.lineTo(-3.5, 0);
         ctx.closePath();
         ctx.fill();
 
-        // Barrel with frost lines
-        ctx.fillStyle = '#5b9bd5';
-        ctx.fillRect(5 + recoil, -1.5, 8, 3);
+        // Core sparkle
+        ctx.fillStyle = `rgba(255,255,255,${0.4 + Math.sin(tower.glowPhase * 2) * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Frost emanation lines at tip
-        ctx.strokeStyle = '#aaddff';
-        ctx.lineWidth = 0.8;
+        // Ice barrel — crystalline
+        ctx.fillStyle = '#5b9bd5';
+        ctx.beginPath();
+        ctx.moveTo(6 + recoil, -2);
+        ctx.lineTo(15 + recoil, -1);
+        ctx.lineTo(15 + recoil, 1);
+        ctx.lineTo(6 + recoil, 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Frost tip emanation
+        ctx.strokeStyle = '#cceeff';
+        ctx.lineWidth = 0.6;
+        const frostSpread = Math.sin(tower.glowPhase * 2) * 0.5;
         for (let i = -2; i <= 2; i++) {
             ctx.beginPath();
-            ctx.moveTo(13 + recoil, i * 1.5);
-            ctx.lineTo(16 + recoil, i * 2.5);
+            ctx.moveTo(15 + recoil, i * 1.2);
+            ctx.lineTo(18 + recoil, i * (2 + frostSpread));
             ctx.stroke();
         }
     }
 
-    drawLightningTurret(ctx, recoil) {
-        // Central orb
-        ctx.fillStyle = '#9b59b6';
+    drawLightningTurret(ctx, recoil, tower) {
+        const sp = tower.spinPhase;
+
+        // Outer energy ring (world-space rotation)
+        ctx.save();
+        ctx.rotate(-tower.turretAngle);
+        ctx.strokeStyle = `rgba(186,104,200,${0.2 + Math.sin(tower.glowPhase * 2) * 0.1})`;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+        ctx.arc(0, 0, 11, sp, sp + Math.PI * 0.8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, sp + Math.PI, sp + Math.PI * 1.8);
+        ctx.stroke();
+        ctx.restore();
+
+        // Central orb — multi-layered with pulsing
+        const orbPulse = 1 + Math.sin(tower.glowPhase * 2) * 0.15;
+
+        // Outer glow
+        ctx.fillStyle = 'rgba(155,89,182,0.2)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 8 * orbPulse, 0, Math.PI * 2);
         ctx.fill();
+
+        // Main orb
+        ctx.fillStyle = '#8e44ad';
+        ctx.beginPath();
+        ctx.arc(0, 0, 6 * orbPulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bright core
         ctx.fillStyle = '#dda0dd';
         ctx.beginPath();
-        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+        ctx.arc(0, 0, 3.5 * orbPulse, 0, Math.PI * 2);
         ctx.fill();
 
-        // Two extending prongs
-        ctx.fillStyle = '#7b3ba6';
-        ctx.fillRect(5 + recoil, -5, 8, 3);
-        ctx.fillRect(5 + recoil, 2, 8, 3);
+        // Hot center
+        ctx.fillStyle = `rgba(255,255,255,${0.4 + Math.sin(tower.glowPhase * 3) * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Jittery mini-arcs between prongs
+        // Tesla prongs — three-pronged fork
+        ctx.fillStyle = '#6a2d96';
+        // Top prong
+        ctx.beginPath();
+        ctx.moveTo(5 + recoil, -6);
+        ctx.lineTo(14 + recoil, -5);
+        ctx.lineTo(14 + recoil, -3);
+        ctx.lineTo(5 + recoil, -3);
+        ctx.closePath();
+        ctx.fill();
+        // Bottom prong
+        ctx.beginPath();
+        ctx.moveTo(5 + recoil, 3);
+        ctx.lineTo(14 + recoil, 3);
+        ctx.lineTo(14 + recoil, 5);
+        ctx.lineTo(5 + recoil, 6);
+        ctx.closePath();
+        ctx.fill();
+        // Center prong
+        ctx.fillStyle = '#7b3ba6';
+        ctx.fillRect(5 + recoil, -1.5, 10, 3);
+
+        // Prong tips — metal caps
+        ctx.fillStyle = '#bbb';
+        ctx.beginPath();
+        ctx.arc(14 + recoil, -4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(14 + recoil, 4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(15 + recoil, 0, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Electric arcs between prongs
         ctx.strokeStyle = '#e0b0ff';
         ctx.lineWidth = 1;
-        for (let i = 0; i < 2; i++) {
-            const sx = 7 + recoil + i * 3;
+        for (let i = 0; i < 3; i++) {
+            const sx = 8 + recoil + i * 2;
+            const jx1 = (Math.random() - 0.5) * 4;
+            const jx2 = (Math.random() - 0.5) * 4;
+            // Top to center
             ctx.beginPath();
-            ctx.moveTo(sx, -3);
-            const jx = (Math.random() - 0.5) * 3;
-            ctx.lineTo(sx + jx, 0);
-            ctx.lineTo(sx, 3);
+            ctx.moveTo(sx, -4);
+            ctx.lineTo(sx + jx1, -1);
+            ctx.stroke();
+            // Bottom to center
+            ctx.beginPath();
+            ctx.moveTo(sx, 4);
+            ctx.lineTo(sx + jx2, 1);
             ctx.stroke();
         }
     }
 
     drawSniperTurret(ctx, recoil, tower) {
-        // Body
+        // Stock / body — angular, tactical
+        ctx.fillStyle = '#8a2820';
+        ctx.beginPath();
+        ctx.moveTo(-7, -3);
+        ctx.lineTo(-3, -4);
+        ctx.lineTo(5, -4);
+        ctx.lineTo(5, 4);
+        ctx.lineTo(-3, 4);
+        ctx.lineTo(-7, 3);
+        ctx.closePath();
+        ctx.fill();
+        // Body highlight
         ctx.fillStyle = '#c0392b';
-        ctx.fillRect(-5, -3, 10, 6);
+        ctx.fillRect(-5, -3, 9, 6);
 
-        // Long thin barrel
-        ctx.fillStyle = '#a93226';
-        ctx.fillRect(4 + recoil, -1.5, 14, 3);
+        // Long barrel — multi-segment
+        ctx.fillStyle = '#7a2820';
+        ctx.fillRect(4 + recoil, -2, 6, 4);
+        ctx.fillStyle = '#8a3228';
+        ctx.fillRect(10 + recoil, -1.5, 8, 3);
 
-        // Scope circle
-        ctx.strokeStyle = '#ddd';
+        // Barrel tip / flash hider
+        ctx.fillStyle = '#555';
+        ctx.fillRect(17 + recoil, -2, 2, 4);
+        ctx.fillStyle = '#777';
+        ctx.fillRect(17.5 + recoil, -1, 1, 2);
+
+        // Scope — detailed
+        ctx.fillStyle = '#444';
+        ctx.fillRect(-1, -7, 8, 3);
+        // Scope tube
+        ctx.strokeStyle = '#666';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(2, -5, 2.5, 0, Math.PI * 2);
+        ctx.arc(0, -5.5, 2.5, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.fillStyle = '#88ccff';
         ctx.beginPath();
-        ctx.arc(2, -5, 1.5, 0, Math.PI * 2);
+        ctx.arc(6, -5.5, 2, 0, Math.PI * 2);
+        ctx.stroke();
+        // Scope lens (reflects)
+        const lensGlow = 0.4 + Math.sin(tower.glowPhase * 2) * 0.2;
+        ctx.fillStyle = `rgba(100,200,255,${lensGlow})`;
+        ctx.beginPath();
+        ctx.arc(0, -5.5, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(100,200,255,${lensGlow * 0.6})`;
+        ctx.beginPath();
+        ctx.arc(6, -5.5, 1.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Muzzle flash during recoil
-        if (tower.recoilTimer > 0.06) {
-            ctx.fillStyle = 'rgba(255,235,59,0.7)';
+        // Bipod legs
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-2, 4);
+        ctx.lineTo(-5, 9);
+        ctx.moveTo(2, 4);
+        ctx.lineTo(5, 9);
+        ctx.stroke();
+
+        // Muzzle flash during recoil — dramatic
+        if (tower.recoilTimer > 0.04) {
+            const t = tower.recoilTimer / 0.12;
+            // Core flash
+            ctx.fillStyle = `rgba(255,255,200,${t * 0.8})`;
             ctx.beginPath();
-            ctx.arc(18 + recoil, 0, 3, 0, Math.PI * 2);
+            ctx.arc(19 + recoil, 0, 2 + t * 2, 0, Math.PI * 2);
             ctx.fill();
+            // Outer flash
+            ctx.fillStyle = `rgba(255,200,50,${t * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(19 + recoil, 0, 4 + t * 3, 0, Math.PI * 2);
+            ctx.fill();
+            // Flash spikes
+            ctx.strokeStyle = `rgba(255,235,59,${t * 0.6})`;
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 4; i++) {
+                const a = (Math.PI / 2) * i + Math.random() * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(19 + recoil, 0);
+                ctx.lineTo(19 + recoil + Math.cos(a) * (4 + t * 4), Math.sin(a) * (4 + t * 4));
+                ctx.stroke();
+            }
         }
     }
 
@@ -782,6 +1196,27 @@ export class Renderer {
     drawUIOverlay() {
         const ctx = this.uiCtx;
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+        // Big wave level number — top-right corner of canvas
+        const waves = this.game.waves;
+        if (waves.currentWave > 0) {
+            const waveText = `${waves.currentWave}`;
+            ctx.save();
+            ctx.font = 'bold 72px monospace';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillText(waveText, CANVAS_W - 18, 22);
+            // Main number
+            ctx.fillStyle = 'rgba(52,152,219,0.35)';
+            ctx.fillText(waveText, CANVAS_W - 20, 20);
+            // Label
+            ctx.font = 'bold 16px monospace';
+            ctx.fillStyle = 'rgba(52,152,219,0.3)';
+            ctx.fillText('WAVE', CANVAS_W - 20, 92);
+            ctx.restore();
+        }
 
         const input = this.game.input;
 

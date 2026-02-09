@@ -99,7 +99,7 @@ export class UI {
 
         // Top bar info
         this.elWave.textContent = `Wave: ${waves.currentWave}/20`;
-        this.elLives.textContent = `Lives: ${eco.lives}`;
+        this.elLives.innerHTML = `&#9829; ${eco.lives}`;
         this.elGold.textContent = `Gold: ${eco.gold}`;
         this.elScore.textContent = `Score: ${eco.score}`;
         this.elRecord.textContent = `Record: ${eco.record}`;
@@ -136,6 +136,8 @@ export class UI {
         const upgradeCost = tower.getUpgradeCost();
         const sellValue = tower.getSellValue();
         const targetMode = TARGET_MODES[tower.targetMode];
+        const modeColors = { First: '#3498db', Closest: '#2ecc71', Strongest: '#e74c3c', Weakest: '#f39c12' };
+        const modeColor = modeColors[targetMode] || '#eee';
 
         let html = `
             <div class="tower-info-header">
@@ -146,10 +148,10 @@ export class UI {
                 <div>Damage: ${tower.damage}</div>
                 <div>Range: ${tower.range.toFixed(1)}</div>
                 <div>Fire Rate: ${(1 / tower.fireRate).toFixed(1)}/s</div>
-                <div>Target: ${targetMode}</div>
+                <div>Target: <span style="color:${modeColor};font-weight:700">${targetMode}</span></div>
             </div>
             <div class="tower-info-actions">
-                <button id="target-btn" class="action-btn" title="Cycle targeting mode (T)">Target: ${targetMode}</button>
+                <button id="target-btn" class="action-btn target-mode-btn" style="border-color:${modeColor};color:${modeColor}" title="Cycle targeting mode (T)">Target: ${targetMode}</button>
         `;
 
         if (upgradeCost !== null) {

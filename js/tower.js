@@ -29,6 +29,8 @@ export class Tower {
         // Visual animation
         this.recoilTimer = 0;
         this.glowPhase = Math.random() * Math.PI * 2;
+        this.spinPhase = 0;
+        this.idleTime = 0; // time without target (for idle animations)
     }
 
     updateStats() {
@@ -99,8 +101,14 @@ export class Tower {
         this.cooldown -= dt;
         if (this.recoilTimer > 0) this.recoilTimer -= dt;
         this.glowPhase += dt * 3;
+        this.spinPhase += dt * 4;
 
         const target = this.findTarget(game.enemies.enemies);
+        if (target) {
+            this.idleTime = 0;
+        } else {
+            this.idleTime += dt;
+        }
         this.target = target;
 
         if (target) {

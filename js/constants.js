@@ -1,9 +1,9 @@
 // ── Canvas & Grid ──────────────────────────────────────────
 export const COLS = 30;
 export const ROWS = 20;
-export const CELL = 32;
-export const CANVAS_W = COLS * CELL; // 960
-export const CANVAS_H = ROWS * CELL; // 640
+export const CELL = 48;
+export const CANVAS_W = COLS * CELL; // 1440
+export const CANVAS_H = ROWS * CELL; // 960
 
 // ── Game States ────────────────────────────────────────────
 export const STATE = {
@@ -209,7 +209,7 @@ export const WAVES = [
     [{ type: 'tank', count: 6, interval: 1.2, delay: 0 }, { type: 'healer', count: 3, interval: 2.0, delay: 2 }],
     [{ type: 'runner', count: 15, interval: 0.35, delay: 0 }, { type: 'tank', count: 3, interval: 1.5, delay: 3 }],
     [{ type: 'grunt', count: 15, interval: 0.5, delay: 0 }, { type: 'runner', count: 10, interval: 0.3, delay: 3 }, { type: 'healer', count: 2, interval: 2.0, delay: 5 }],
-    [{ type: 'boss', count: 2, interval: 5.0, delay: 0 }, { type: 'tank', count: 4, interval: 1.5, delay: 3 }],
+    [{ type: 'boss', count: 2, interval: 8.0, delay: 0 }, { type: 'tank', count: 2, interval: 2.0, delay: 4 }],
     // Wave 16-20: Endgame
     [{ type: 'swarm', count: 40, interval: 0.15, delay: 0 }, { type: 'tank', count: 4, interval: 1.0, delay: 2 }],
     [{ type: 'tank', count: 8, interval: 1.0, delay: 0 }, { type: 'healer', count: 4, interval: 1.5, delay: 2 }],
@@ -228,5 +228,5 @@ export const MAX_PARTICLES = 500;
 
 // ── HP Scaling ─────────────────────────────────────────────
 export function getHPScale(wave) {
-    return wave * Math.pow(1.12, wave) * 0.95;
+    return wave * Math.pow(1.12, wave) * 0.9;
 }

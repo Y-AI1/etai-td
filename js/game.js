@@ -16,7 +16,7 @@ const FIXED_DT = 1 / 60; // 60 Hz physics
 export class Game {
     constructor(canvases) {
         this.state = STATE.MENU;
-        this.speed = 1;
+        this.speed = 2;
         this.lastTime = 0;
         this.accumulator = 0;
 
