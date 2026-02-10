@@ -29,21 +29,60 @@ export const MAP_DEFS = {
         themeColor: '#27ae60',
         hpMultiplier: 1.0,
         description: 'A long winding path gives you plenty of time to build defenses.',
-        waypoints: [
-            { x: 0, y: 2 }, { x: 7, y: 2 }, { x: 7, y: 6 }, { x: 2, y: 6 },
-            { x: 2, y: 10 }, { x: 10, y: 10 }, { x: 10, y: 4 }, { x: 15, y: 4 },
-            { x: 15, y: 14 }, { x: 6, y: 14 }, { x: 6, y: 18 }, { x: 20, y: 18 },
-            { x: 20, y: 12 }, { x: 25, y: 12 }, { x: 25, y: 6 }, { x: 29, y: 6 },
+        layouts: [
+            // Layout 0: Original winding path
+            {
+                waypoints: [
+                    { x: 0, y: 2 }, { x: 7, y: 2 }, { x: 7, y: 6 }, { x: 2, y: 6 },
+                    { x: 2, y: 10 }, { x: 10, y: 10 }, { x: 10, y: 4 }, { x: 15, y: 4 },
+                    { x: 15, y: 14 }, { x: 6, y: 14 }, { x: 6, y: 18 }, { x: 20, y: 18 },
+                    { x: 20, y: 12 }, { x: 25, y: 12 }, { x: 25, y: 6 }, { x: 29, y: 6 },
+                ],
+                blocked: [
+                    { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 12, y: 1 }, { x: 13, y: 1 },
+                    { x: 22, y: 3 }, { x: 23, y: 3 }, { x: 0, y: 8 }, { x: 1, y: 8 },
+                    { x: 18, y: 8 }, { x: 19, y: 8 }, { x: 27, y: 10 }, { x: 28, y: 10 },
+                    { x: 12, y: 16 }, { x: 13, y: 16 }, { x: 24, y: 16 }, { x: 25, y: 16 },
+                    { x: 3, y: 19 }, { x: 4, y: 19 }, { x: 16, y: 0 }, { x: 27, y: 2 },
+                    { x: 0, y: 15 }, { x: 14, y: 12 },
+                ],
+                paths: null,
+            },
+            // Layout 1: Mirrored serpentine starting bottom-left, going up
+            {
+                waypoints: [
+                    { x: 0, y: 17 }, { x: 7, y: 17 }, { x: 7, y: 13 }, { x: 2, y: 13 },
+                    { x: 2, y: 9 }, { x: 10, y: 9 }, { x: 10, y: 15 }, { x: 15, y: 15 },
+                    { x: 15, y: 5 }, { x: 6, y: 5 }, { x: 6, y: 1 }, { x: 20, y: 1 },
+                    { x: 20, y: 7 }, { x: 25, y: 7 }, { x: 25, y: 13 }, { x: 29, y: 13 },
+                ],
+                blocked: [
+                    { x: 4, y: 19 }, { x: 5, y: 19 }, { x: 12, y: 18 }, { x: 13, y: 18 },
+                    { x: 22, y: 16 }, { x: 23, y: 16 }, { x: 0, y: 11 }, { x: 1, y: 11 },
+                    { x: 18, y: 11 }, { x: 19, y: 11 }, { x: 27, y: 9 }, { x: 28, y: 9 },
+                    { x: 12, y: 3 }, { x: 13, y: 3 }, { x: 24, y: 3 }, { x: 25, y: 3 },
+                    { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 16, y: 19 }, { x: 27, y: 17 },
+                    { x: 0, y: 4 }, { x: 14, y: 7 },
+                ],
+                paths: null,
+            },
+            // Layout 2: Wider S-curve with fewer but longer segments
+            {
+                waypoints: [
+                    { x: 0, y: 3 }, { x: 12, y: 3 }, { x: 12, y: 10 }, { x: 3, y: 10 },
+                    { x: 3, y: 16 }, { x: 18, y: 16 }, { x: 18, y: 8 }, { x: 27, y: 8 },
+                    { x: 27, y: 16 }, { x: 29, y: 16 },
+                ],
+                blocked: [
+                    { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 15, y: 1 }, { x: 16, y: 1 },
+                    { x: 0, y: 6 }, { x: 1, y: 6 }, { x: 22, y: 5 }, { x: 23, y: 5 },
+                    { x: 8, y: 13 }, { x: 9, y: 13 }, { x: 14, y: 13 }, { x: 15, y: 13 },
+                    { x: 22, y: 12 }, { x: 23, y: 12 }, { x: 0, y: 18 }, { x: 1, y: 18 },
+                    { x: 10, y: 19 }, { x: 11, y: 19 }, { x: 25, y: 1 }, { x: 26, y: 1 },
+                ],
+                paths: null,
+            },
         ],
-        blocked: [
-            { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 12, y: 1 }, { x: 13, y: 1 },
-            { x: 22, y: 3 }, { x: 23, y: 3 }, { x: 0, y: 8 }, { x: 1, y: 8 },
-            { x: 18, y: 8 }, { x: 19, y: 8 }, { x: 27, y: 10 }, { x: 28, y: 10 },
-            { x: 12, y: 16 }, { x: 13, y: 16 }, { x: 24, y: 16 }, { x: 25, y: 16 },
-            { x: 3, y: 19 }, { x: 4, y: 19 }, { x: 16, y: 0 }, { x: 27, y: 2 },
-            { x: 0, y: 15 }, { x: 14, y: 12 },
-        ],
-        paths: null,
     },
     splitcreek: {
         name: 'Split Creek',
@@ -51,22 +90,65 @@ export const MAP_DEFS = {
         hpMultiplier: 0.85,
         environment: 'desert',
         description: 'The path forks midway — enemies randomly pick a branch.',
-        waypoints: [
-            { x: 0, y: 9 }, { x: 6, y: 9 }, { x: 6, y: 10 },
-        ],
-        paths: {
-            upper: [{ x: 6, y: 5 }, { x: 14, y: 5 }, { x: 14, y: 3 }, { x: 22, y: 3 }, { x: 22, y: 8 }],
-            lower: [{ x: 6, y: 15 }, { x: 14, y: 15 }, { x: 14, y: 17 }, { x: 22, y: 17 }, { x: 22, y: 12 }],
-            suffix: [{ x: 22, y: 10 }, { x: 26, y: 10 }, { x: 29, y: 10 }],
-        },
-        blocked: [
-            { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 10, y: 1 }, { x: 11, y: 1 },
-            { x: 18, y: 0 }, { x: 19, y: 0 }, { x: 26, y: 1 }, { x: 27, y: 1 },
-            { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 1, y: 15 }, { x: 2, y: 15 },
-            { x: 10, y: 9 }, { x: 11, y: 9 }, { x: 10, y: 11 }, { x: 11, y: 11 },
-            { x: 17, y: 9 }, { x: 18, y: 9 }, { x: 17, y: 11 }, { x: 18, y: 11 },
-            { x: 26, y: 6 }, { x: 27, y: 6 }, { x: 26, y: 14 }, { x: 27, y: 14 },
-            { x: 4, y: 19 }, { x: 5, y: 19 }, { x: 24, y: 19 }, { x: 25, y: 19 },
+        layouts: [
+            // Layout 0: Original horizontal fork
+            {
+                waypoints: [
+                    { x: 0, y: 9 }, { x: 6, y: 9 }, { x: 6, y: 10 },
+                ],
+                paths: {
+                    upper: [{ x: 6, y: 5 }, { x: 14, y: 5 }, { x: 14, y: 3 }, { x: 22, y: 3 }, { x: 22, y: 8 }],
+                    lower: [{ x: 6, y: 15 }, { x: 14, y: 15 }, { x: 14, y: 17 }, { x: 22, y: 17 }, { x: 22, y: 12 }],
+                    suffix: [{ x: 22, y: 10 }, { x: 26, y: 10 }, { x: 29, y: 10 }],
+                },
+                blocked: [
+                    { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 10, y: 1 }, { x: 11, y: 1 },
+                    { x: 18, y: 0 }, { x: 19, y: 0 }, { x: 26, y: 1 }, { x: 27, y: 1 },
+                    { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 1, y: 15 }, { x: 2, y: 15 },
+                    { x: 10, y: 9 }, { x: 11, y: 9 }, { x: 10, y: 11 }, { x: 11, y: 11 },
+                    { x: 17, y: 9 }, { x: 18, y: 9 }, { x: 17, y: 11 }, { x: 18, y: 11 },
+                    { x: 26, y: 6 }, { x: 27, y: 6 }, { x: 26, y: 14 }, { x: 27, y: 14 },
+                    { x: 4, y: 19 }, { x: 5, y: 19 }, { x: 24, y: 19 }, { x: 25, y: 19 },
+                ],
+            },
+            // Layout 1: Vertical fork — splits up/down then converges on right
+            {
+                waypoints: [
+                    { x: 0, y: 10 }, { x: 4, y: 10 },
+                ],
+                paths: {
+                    upper: [{ x: 4, y: 4 }, { x: 12, y: 4 }, { x: 12, y: 2 }, { x: 20, y: 2 }, { x: 20, y: 7 }],
+                    lower: [{ x: 4, y: 16 }, { x: 12, y: 16 }, { x: 12, y: 18 }, { x: 20, y: 18 }, { x: 20, y: 13 }],
+                    suffix: [{ x: 20, y: 10 }, { x: 25, y: 10 }, { x: 29, y: 10 }],
+                },
+                blocked: [
+                    { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 16, y: 1 }, { x: 17, y: 1 },
+                    { x: 24, y: 0 }, { x: 25, y: 0 }, { x: 1, y: 2 }, { x: 2, y: 2 },
+                    { x: 1, y: 18 }, { x: 2, y: 18 }, { x: 8, y: 10 }, { x: 9, y: 10 },
+                    { x: 15, y: 9 }, { x: 16, y: 9 }, { x: 15, y: 11 }, { x: 16, y: 11 },
+                    { x: 24, y: 5 }, { x: 25, y: 5 }, { x: 24, y: 15 }, { x: 25, y: 15 },
+                    { x: 8, y: 19 }, { x: 9, y: 19 }, { x: 16, y: 19 }, { x: 17, y: 19 },
+                ],
+            },
+            // Layout 2: Wide fork with different angles and merge point
+            {
+                waypoints: [
+                    { x: 0, y: 10 }, { x: 5, y: 10 }, { x: 5, y: 9 },
+                ],
+                paths: {
+                    upper: [{ x: 5, y: 3 }, { x: 10, y: 3 }, { x: 10, y: 6 }, { x: 18, y: 6 }, { x: 18, y: 9 }],
+                    lower: [{ x: 5, y: 16 }, { x: 10, y: 16 }, { x: 10, y: 13 }, { x: 18, y: 13 }, { x: 18, y: 11 }],
+                    suffix: [{ x: 18, y: 10 }, { x: 24, y: 10 }, { x: 24, y: 5 }, { x: 29, y: 5 }],
+                },
+                blocked: [
+                    { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 8, y: 0 }, { x: 9, y: 0 },
+                    { x: 14, y: 1 }, { x: 15, y: 1 }, { x: 22, y: 2 }, { x: 23, y: 2 },
+                    { x: 2, y: 18 }, { x: 3, y: 18 }, { x: 14, y: 18 }, { x: 15, y: 18 },
+                    { x: 8, y: 9 }, { x: 9, y: 9 }, { x: 8, y: 11 }, { x: 9, y: 11 },
+                    { x: 13, y: 9 }, { x: 14, y: 9 }, { x: 13, y: 11 }, { x: 14, y: 11 },
+                    { x: 27, y: 8 }, { x: 28, y: 8 }, { x: 22, y: 15 }, { x: 23, y: 15 },
+                ],
+            },
         ],
     },
     gauntlet: {
@@ -75,18 +157,53 @@ export const MAP_DEFS = {
         hpMultiplier: 0.65,
         environment: 'lava',
         description: 'A short direct path — enemies arrive fast, every tower counts.',
-        waypoints: [
-            { x: 0, y: 10 }, { x: 5, y: 10 }, { x: 5, y: 5 }, { x: 12, y: 5 },
-            { x: 12, y: 14 }, { x: 20, y: 14 }, { x: 20, y: 8 }, { x: 29, y: 8 },
+        layouts: [
+            // Layout 0: Original zigzag
+            {
+                waypoints: [
+                    { x: 0, y: 10 }, { x: 5, y: 10 }, { x: 5, y: 5 }, { x: 12, y: 5 },
+                    { x: 12, y: 14 }, { x: 20, y: 14 }, { x: 20, y: 8 }, { x: 29, y: 8 },
+                ],
+                blocked: [
+                    { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 8, y: 1 }, { x: 9, y: 1 },
+                    { x: 15, y: 2 }, { x: 16, y: 2 }, { x: 24, y: 3 }, { x: 25, y: 3 },
+                    { x: 2, y: 17 }, { x: 3, y: 17 }, { x: 8, y: 18 }, { x: 9, y: 18 },
+                    { x: 15, y: 17 }, { x: 16, y: 17 }, { x: 24, y: 17 }, { x: 25, y: 17 },
+                    { x: 0, y: 0 }, { x: 28, y: 0 }, { x: 0, y: 19 }, { x: 28, y: 19 },
+                ],
+                paths: null,
+            },
+            // Layout 1: Different zigzag pattern — enters top, exits bottom-right
+            {
+                waypoints: [
+                    { x: 0, y: 4 }, { x: 8, y: 4 }, { x: 8, y: 12 }, { x: 16, y: 12 },
+                    { x: 16, y: 4 }, { x: 24, y: 4 }, { x: 24, y: 15 }, { x: 29, y: 15 },
+                ],
+                blocked: [
+                    { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 12, y: 1 }, { x: 13, y: 1 },
+                    { x: 20, y: 1 }, { x: 21, y: 1 }, { x: 27, y: 1 }, { x: 28, y: 1 },
+                    { x: 3, y: 18 }, { x: 4, y: 18 }, { x: 12, y: 18 }, { x: 13, y: 18 },
+                    { x: 20, y: 18 }, { x: 21, y: 18 }, { x: 27, y: 18 }, { x: 28, y: 18 },
+                    { x: 0, y: 0 }, { x: 0, y: 19 },
+                ],
+                paths: null,
+            },
+            // Layout 2: L-shaped path with tight turns
+            {
+                waypoints: [
+                    { x: 0, y: 3 }, { x: 6, y: 3 }, { x: 6, y: 10 }, { x: 14, y: 10 },
+                    { x: 14, y: 3 }, { x: 22, y: 3 }, { x: 22, y: 16 }, { x: 29, y: 16 },
+                ],
+                blocked: [
+                    { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 10, y: 1 }, { x: 11, y: 1 },
+                    { x: 18, y: 0 }, { x: 19, y: 0 }, { x: 26, y: 1 }, { x: 27, y: 1 },
+                    { x: 3, y: 18 }, { x: 4, y: 18 }, { x: 10, y: 18 }, { x: 11, y: 18 },
+                    { x: 18, y: 18 }, { x: 19, y: 18 }, { x: 26, y: 18 }, { x: 27, y: 18 },
+                    { x: 0, y: 0 }, { x: 0, y: 19 },
+                ],
+                paths: null,
+            },
         ],
-        blocked: [
-            { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 8, y: 1 }, { x: 9, y: 1 },
-            { x: 15, y: 2 }, { x: 16, y: 2 }, { x: 24, y: 3 }, { x: 25, y: 3 },
-            { x: 2, y: 17 }, { x: 3, y: 17 }, { x: 8, y: 18 }, { x: 9, y: 18 },
-            { x: 15, y: 17 }, { x: 16, y: 17 }, { x: 24, y: 17 }, { x: 25, y: 17 },
-            { x: 0, y: 0 }, { x: 28, y: 0 }, { x: 0, y: 19 }, { x: 28, y: 19 },
-        ],
-        paths: null,
     },
 };
 

@@ -97,6 +97,7 @@ export class UI {
         const h = canvas.height;
         const cellW = w / COLS;
         const cellH = h / ROWS;
+        const layout = def.layouts[0];
 
         // Background
         const env = def.environment || 'forest';
@@ -123,22 +124,22 @@ export class UI {
         };
 
         // Carve all waypoint segments
-        if (def.paths) {
-            const prefix = def.waypoints;
+        if (layout.paths) {
+            const prefix = layout.waypoints;
             for (let i = 0; i < prefix.length - 1; i++) carve(prefix[i].x, prefix[i].y, prefix[i + 1].x, prefix[i + 1].y);
             const prefixEnd = prefix[prefix.length - 1];
-            carve(prefixEnd.x, prefixEnd.y, def.paths.upper[0].x, def.paths.upper[0].y);
-            for (let i = 0; i < def.paths.upper.length - 1; i++) carve(def.paths.upper[i].x, def.paths.upper[i].y, def.paths.upper[i + 1].x, def.paths.upper[i + 1].y);
-            carve(prefixEnd.x, prefixEnd.y, def.paths.lower[0].x, def.paths.lower[0].y);
-            for (let i = 0; i < def.paths.lower.length - 1; i++) carve(def.paths.lower[i].x, def.paths.lower[i].y, def.paths.lower[i + 1].x, def.paths.lower[i + 1].y);
-            const upperEnd = def.paths.upper[def.paths.upper.length - 1];
-            carve(upperEnd.x, upperEnd.y, def.paths.suffix[0].x, def.paths.suffix[0].y);
-            const lowerEnd = def.paths.lower[def.paths.lower.length - 1];
-            carve(lowerEnd.x, lowerEnd.y, def.paths.suffix[0].x, def.paths.suffix[0].y);
-            for (let i = 0; i < def.paths.suffix.length - 1; i++) carve(def.paths.suffix[i].x, def.paths.suffix[i].y, def.paths.suffix[i + 1].x, def.paths.suffix[i + 1].y);
+            carve(prefixEnd.x, prefixEnd.y, layout.paths.upper[0].x, layout.paths.upper[0].y);
+            for (let i = 0; i < layout.paths.upper.length - 1; i++) carve(layout.paths.upper[i].x, layout.paths.upper[i].y, layout.paths.upper[i + 1].x, layout.paths.upper[i + 1].y);
+            carve(prefixEnd.x, prefixEnd.y, layout.paths.lower[0].x, layout.paths.lower[0].y);
+            for (let i = 0; i < layout.paths.lower.length - 1; i++) carve(layout.paths.lower[i].x, layout.paths.lower[i].y, layout.paths.lower[i + 1].x, layout.paths.lower[i + 1].y);
+            const upperEnd = layout.paths.upper[layout.paths.upper.length - 1];
+            carve(upperEnd.x, upperEnd.y, layout.paths.suffix[0].x, layout.paths.suffix[0].y);
+            const lowerEnd = layout.paths.lower[layout.paths.lower.length - 1];
+            carve(lowerEnd.x, lowerEnd.y, layout.paths.suffix[0].x, layout.paths.suffix[0].y);
+            for (let i = 0; i < layout.paths.suffix.length - 1; i++) carve(layout.paths.suffix[i].x, layout.paths.suffix[i].y, layout.paths.suffix[i + 1].x, layout.paths.suffix[i + 1].y);
         } else {
-            for (let i = 0; i < def.waypoints.length - 1; i++) {
-                carve(def.waypoints[i].x, def.waypoints[i].y, def.waypoints[i + 1].x, def.waypoints[i + 1].y);
+            for (let i = 0; i < layout.waypoints.length - 1; i++) {
+                carve(layout.waypoints[i].x, layout.waypoints[i].y, layout.waypoints[i + 1].x, layout.waypoints[i + 1].y);
             }
         }
 
@@ -154,15 +155,15 @@ export class UI {
 
         // Draw blocked cells
         ctx.fillStyle = env === 'desert' ? '#a08060' : env === 'lava' ? '#1a1a2a' : '#4a5a4a';
-        for (const c of def.blocked) {
+        for (const c of layout.blocked) {
             if (c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < ROWS && grid[c.y][c.x] !== CELL_TYPE.PATH) {
                 ctx.fillRect(c.x * cellW, c.y * cellH, cellW + 0.5, cellH + 0.5);
             }
         }
 
         // Entry/exit markers
-        const entry = def.waypoints[0];
-        const exitPt = def.paths ? def.paths.suffix[def.paths.suffix.length - 1] : def.waypoints[def.waypoints.length - 1];
+        const entry = layout.waypoints[0];
+        const exitPt = layout.paths ? layout.paths.suffix[layout.paths.suffix.length - 1] : layout.waypoints[layout.waypoints.length - 1];
         ctx.fillStyle = '#2ecc71';
         ctx.fillRect(entry.x * cellW, entry.y * cellH, cellW + 0.5, cellH + 0.5);
         ctx.fillStyle = '#e74c3c';
@@ -290,6 +291,13 @@ export class UI {
         if (this.elAvatarCanvas && game.worldLevel > 0) {
             const themeColor = game.map.def.themeColor || '#888';
             game.renderer.drawAvatar(this.elAvatarCanvas.getContext('2d'), game.worldLevel, themeColor);
+            // Tint avatar border and group to match theme
+            this.elAvatarCanvas.style.borderColor = themeColor;
+            const group = this.elAvatarCanvas.parentElement;
+            if (group) {
+                group.style.borderColor = themeColor;
+                group.style.boxShadow = `0 0 14px ${themeColor}66, inset 0 0 8px ${themeColor}1a`;
+            }
         }
 
         // Speed buttons

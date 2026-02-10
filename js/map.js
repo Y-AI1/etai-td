@@ -11,9 +11,10 @@ function seedRand(x, y, i) {
 }
 
 export class GameMap {
-    constructor(mapId = 'serpentine') {
+    constructor(mapId = 'serpentine', layoutIndex = 0) {
         this.mapId = mapId;
         this.def = MAP_DEFS[mapId];
+        this.layout = this.def.layouts[layoutIndex % this.def.layouts.length];
         this.grid = [];
         this.path = [];        // world-coordinate waypoints (single path or prefix for split)
         this.pathCells = new Set(); // "x,y" strings for fast lookup
@@ -26,19 +27,19 @@ export class GameMap {
     }
 
     buildGrid() {
-        const def = this.def;
+        const layout = this.layout;
 
         // Initialize all cells as buildable
         this.grid = Array.from({ length: ROWS }, () =>
             Array.from({ length: COLS }, () => CELL_TYPE.BUILDABLE)
         );
 
-        if (def.paths) {
+        if (layout.paths) {
             // Split map: carve prefix, upper, lower, suffix
-            const prefix = def.waypoints;
-            const upper = def.paths.upper;
-            const lower = def.paths.lower;
-            const suffix = def.paths.suffix;
+            const prefix = layout.waypoints;
+            const upper = layout.paths.upper;
+            const lower = layout.paths.lower;
+            const suffix = layout.paths.suffix;
 
             // Carve prefix
             for (let i = 0; i < prefix.length - 1; i++) {
@@ -80,7 +81,7 @@ export class GameMap {
             this.path = this.pathUpper;
         } else {
             // Single path map
-            const waypoints = def.waypoints;
+            const waypoints = layout.waypoints;
             for (let i = 0; i < waypoints.length - 1; i++) {
                 this.carveLine(waypoints[i].x, waypoints[i].y, waypoints[i + 1].x, waypoints[i + 1].y);
             }
@@ -88,7 +89,7 @@ export class GameMap {
         }
 
         // Mark blocked cells
-        for (const c of def.blocked) {
+        for (const c of layout.blocked) {
             if (c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < ROWS) {
                 if (this.grid[c.y][c.x] !== CELL_TYPE.PATH) {
                     this.grid[c.y][c.x] = CELL_TYPE.BLOCKED;
@@ -176,10 +177,10 @@ export class GameMap {
     }
 
     drawCastle(ctx) {
-        const def = this.def;
-        const exitPt = def.paths
-            ? def.paths.suffix[def.paths.suffix.length - 1]
-            : def.waypoints[def.waypoints.length - 1];
+        const layout = this.layout;
+        const exitPt = layout.paths
+            ? layout.paths.suffix[layout.paths.suffix.length - 1]
+            : layout.waypoints[layout.waypoints.length - 1];
         const cx = exitPt.x * CELL + CELL / 2;
         const cy = exitPt.y * CELL + CELL / 2;
         const s = 1.8; // scale factor

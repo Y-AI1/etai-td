@@ -56,6 +56,9 @@ export class Game {
         if (!this.selectedMapId) return;
         this.audio.ensureContext();
         this.worldLevel = Economy.getWorldLevel(this.selectedMapId) + 1;
+        // Recreate map with the correct layout for this world level
+        this.map = new GameMap(this.selectedMapId, (this.worldLevel - 1) % 3);
+        this.renderer.drawTerrain();
         this.state = STATE.PLAYING;
         this.ui.hideAllScreens();
         this.waves.startNextWave();
@@ -105,6 +108,8 @@ export class Game {
         this.particles.reset();
         this.waves.reset();
         this.input.reset();
+        // Recreate map with the new layout for this world level
+        this.map = new GameMap(this.selectedMapId, (this.worldLevel - 1) % 3);
         this.renderer.drawTerrain();
         this.state = STATE.PLAYING;
         this.ui.hideAllScreens();
