@@ -278,6 +278,10 @@ export class UI {
         // Pause button
         this.elPauseBtn.textContent = game.state === STATE.PAUSED ? 'Resume' : 'Pause';
 
+        // Quit button — hide on menu
+        const exitBtn = document.getElementById('exit-btn');
+        if (exitBtn) exitBtn.style.display = game.state === STATE.MENU ? 'none' : 'inline-block';
+
         // Next wave button
         if (waves.betweenWaves && game.state === STATE.PLAYING) {
             this.elNextWaveBtn.style.display = 'inline-block';

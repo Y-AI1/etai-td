@@ -143,7 +143,7 @@ export class EnemyManager {
 
             if (e.reached) {
                 this.game.economy.loseLives(e.livesCost);
-                this.game.particles.spawnBigFloatingText(e.x, e.y - 10, `-${e.livesCost}`, '#ff4444');
+                this.game.particles.spawnBigFloatingText(e.x, e.y - 10, `-${e.livesCost}`, '#ffffff');
                 if (this.game.economy.lives <= 0) {
                     this.game.gameOver();
                 }

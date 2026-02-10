@@ -137,6 +137,7 @@ body {
 }
 
 #exit-btn {
+    display: none;
     background: #8b1a1a;
     border-color: #e74c3c;
     color: #ff6b6b;
