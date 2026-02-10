@@ -189,6 +189,11 @@ body {
     cursor: not-allowed;
 }
 
+.tower-btn.locked {
+    opacity: 0.25;
+    filter: grayscale(1);
+}
+
 .tower-icon {
     width: 16px;
     height: 16px;

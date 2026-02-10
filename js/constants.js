@@ -112,6 +112,7 @@ export const TOWER_TYPES = {
         cost: 100,
         color: '#8b5e3c',
         splash: true,
+        unlockWave: 2,
         levels: [
             { damage: 30, range: 3.0, fireRate: 1.2, projSpeed: 200, splashRadius: 1.2 },
             { damage: 50, range: 3.5, fireRate: 1.0, projSpeed: 220, splashRadius: 1.5, upgradeCost: 65 },

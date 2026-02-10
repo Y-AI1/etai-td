@@ -158,6 +158,7 @@ export class InputHandler {
 
     selectTowerType(type) {
         const def = TOWER_TYPES[type];
+        if (def.unlockWave && this.game.waves.currentWave < def.unlockWave) return;
         if (this.game.economy.canAfford(def.cost)) {
             this.selectedTowerType = type;
             this.selectedTower = null;

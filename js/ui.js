@@ -186,7 +186,9 @@ export class UI {
                 <span class="tower-name">${def.name}</span>
                 <span class="tower-cost">$${def.cost}</span>
             `;
-            btn.title = `${def.name} Tower ($${def.cost}) - Press ${Object.entries({ arrow: 1, cannon: 2, frost: 3, lightning: 4, sniper: 5 })[Object.keys(TOWER_TYPES).indexOf(key)][1]}`;
+            const hotkey = Object.keys(TOWER_TYPES).indexOf(key) + 1;
+            const lockNote = def.unlockWave ? ` [Unlocks wave ${def.unlockWave}]` : '';
+            btn.title = `${def.name} Tower ($${def.cost}) - Press ${hotkey}${lockNote}`;
             btn.addEventListener('click', () => {
                 this.game.audio.ensureContext();
                 this.game.input.selectTowerType(key);
@@ -268,13 +270,15 @@ export class UI {
             this.elNextWaveBtn.style.display = 'none';
         }
 
-        // Tower buttons affordability
+        // Tower buttons affordability + unlock
         const towerBtns = this.elTowerPanel.querySelectorAll('.tower-btn');
         towerBtns.forEach(btn => {
             const type = btn.dataset.type;
             const def = TOWER_TYPES[type];
+            const locked = def.unlockWave > 0 && waves.currentWave < def.unlockWave;
             const canAfford = eco.gold >= def.cost;
-            btn.classList.toggle('disabled', !canAfford);
+            btn.classList.toggle('disabled', locked || !canAfford);
+            btn.classList.toggle('locked', locked);
             btn.classList.toggle('selected', game.input.selectedTowerType === type);
         });
     }
