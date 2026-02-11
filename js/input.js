@@ -188,6 +188,7 @@ export class InputHandler {
                     if (confirm(`Clear record for ${this.game.selectedMapId}?`)) {
                         Economy.clearMapRecord(this.game.selectedMapId);
                         this.game.economy.record = 0;
+                        this.game.economy.score = 0;
                         this.game.ui.update();
                     }
                 }
