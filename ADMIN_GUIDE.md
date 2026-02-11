@@ -16,7 +16,8 @@ Press **`** (backtick) to toggle admin mode. When active, a sidebar panel appear
 | **W** | Set wave — prompts for a wave number, clears the field, and jumps to that wave | Yes (prompt) |
 | **L** | Set level — prompts for a level number, full reset at that world level | Yes (prompt) |
 | **C** | Clear the entire wave debug log from localStorage | Yes (confirm dialog) |
-| **R** | Clear the high score record for the current map | Yes (confirm dialog) |
+| **R** | Reset progress — clears record, world level, and restarts at level 1 | Yes (confirm dialog) |
+| **D** | Download wave debug log as CSV file | No |
 | **`** | Toggle admin mode on/off | No |
 
 Note: **E** is a hidden cheat (kill all) that works without admin mode.
@@ -169,10 +170,10 @@ The `WAVES` array (20 entries) defines enemy types, counts, and spawn timing per
 | `delay` | Seconds before this group starts spawning (relative to wave start) |
 
 **Wave phases:**
-- Waves 1-5: Introduction (simple enemy types)
-- Waves 6-10: Variety (mixed types, first boss at wave 10)
-- Waves 11-15: Escalation (larger numbers, combos)
-- Waves 16-20: Endgame (multi-boss, everything mixed)
+- Waves 1-5: Introduction (runners at wave 2, tanks at wave 4, healers at wave 5)
+- Waves 6-10: Variety (all types in play, first boss at wave 10)
+- Waves 11-15: Escalation (complex combos, multi-boss at wave 15)
+- Waves 16-20: Endgame (bosses in waves 17-20, tighter spawns, fewer but stronger)
 - Waves 21+: Procedurally generated (see `WaveManager.generateWave` in `wave.js`)
 
 **How to make a wave harder:**
@@ -190,7 +191,7 @@ The `WAVES` array (20 entries) defines enemy types, counts, and spawn timing per
 
 ```js
 export function getWaveHPScale(wave) {
-    return wave * Math.pow(1.10, wave) * 0.9;
+    return wave * Math.pow(1.08, wave);
 }
 ```
 
@@ -198,13 +199,13 @@ This exponential curve determines how much base HP is multiplied per wave number
 
 | Wave | HP Scale |
 |------|----------|
-| 1 | 0.99 |
-| 5 | 7.2 |
-| 10 | 23.4 |
-| 15 | 56.2 |
-| 20 | 121.5 |
+| 1 | 1.08 |
+| 5 | 7.35 |
+| 10 | 21.6 |
+| 15 | 47.6 |
+| 20 | 93.2 |
 
-**The exponent base (1.10) is the most impactful tuning knob in the game.** Changing it from 1.10 to 1.12 roughly doubles wave-20 difficulty. Handle with care.
+**The exponent base (1.08) is the most impactful tuning knob in the game.** Changing it from 1.08 to 1.10 roughly increases wave-20 difficulty by 30%. Handle with care.
 
 ---
 
@@ -247,12 +248,12 @@ Defined in `ENEMY_TYPES`. Each enemy has:
 
 | Type | baseHP | Speed | Armor | Role |
 |------|--------|-------|-------|------|
-| Grunt | 30 | 60 | 0 | Baseline |
-| Runner | 15 | 110 | 0 | Fast, fragile |
-| Tank | 120 | 35 | 0.30 | Slow, tanky |
-| Healer | 50 | 55 | 0 | Heals nearby allies |
-| Boss | 400 | 22 | 0.20 | High HP, slow |
-| Swarm | 8 | 90 | 0 | Cheap, fast, overwhelming in numbers |
+| Grunt | 30 | 70 | 0 | Baseline |
+| Runner | 15 | 125 | 0 | Fast, fragile |
+| Tank | 120 | 40 | 0.30 | Slow, tanky |
+| Healer | 50 | 65 | 0 | Heals nearby allies |
+| Boss | 400 | 26 | 0.20 | High HP, slow |
+| Swarm | 8 | 105 | 0 | Cheap, fast, overwhelming in numbers |
 
 **Adding a new enemy type:**
 1. Add entry to `ENEMY_TYPES` with all fields
@@ -345,7 +346,58 @@ export const WAVE_BONUS_PER = 10;     // additional per wave number
 
 ---
 
-## 7. Map Layouts
+## 7. Wave Modifiers
+
+Starting from wave 3, each wave has a 35% chance of receiving a random modifier that buffs all enemies in that wave. Defined in `WAVE_MODIFIERS` in `constants.js`:
+
+```js
+export const WAVE_MODIFIERS = {
+    armored: { armorBonus: 0.20 },   // +20% armor to all enemies
+    swift:   { speedMulti: 1.30 },   // +30% movement speed
+    regen:   { regenPercent: 0.005 }, // 0.5% of maxHP per second
+    horde:   { countMulti: 1.4, hpMulti: 0.75 }, // 40% more enemies, 25% less HP
+};
+```
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `MODIFIER_START_WAVE` | 3 | First wave that can get a modifier |
+| `MODIFIER_CHANCE` | 0.35 | Probability per wave |
+
+**Modifier behavior:**
+- **Armored**: Adds flat armor bonus (capped at 0.75 total). Applied at spawn via `enemy.applyModifier()`.
+- **Swift**: Multiplies both `speed` and `baseSpeed`. Applied at spawn.
+- **Regen**: Sets `enemy.regenRate = maxHP * regenPercent`. HP regen runs every frame in `enemy.update()`.
+- **Horde**: Modifies spawn groups (ceil of count × 1.4) and multiplies hpScale by 0.75. Applied in `wave.js startNextWave()`.
+
+**Tuning tips:**
+- To disable modifiers entirely, set `MODIFIER_CHANCE = 0`
+- To make modifiers more frequent, increase `MODIFIER_CHANCE` (up to 1.0)
+- To adjust when modifiers start, change `MODIFIER_START_WAVE`
+- The modifier glow ring on enemies uses dashed circles (armored=gray, swift=orange, regen=green)
+- Horde has no per-enemy visual (enemies just look normal, there are more of them)
+
+---
+
+## 8. Early-Send Bonus
+
+Players earn bonus gold for sending the next wave early (pressing N between waves). Defined in `constants.js`:
+
+```js
+export const EARLY_SEND_MAX_BONUS = 50;  // max gold for immediate send
+export const EARLY_SEND_DECAY = 5;       // gold lost per second of waiting
+```
+
+**Formula:** `bonus = max(0, EARLY_SEND_MAX_BONUS - betweenWaveTimer × EARLY_SEND_DECAY)`
+
+At default values: 50g for instant send, 40g after 2 seconds, 0g after 10 seconds. The bonus amount is shown on the Next Wave button with a live countdown.
+
+**Implementation:** The `betweenWaveTimer` increments in `wave.js update()` when `betweenWaves` is true. The bonus is calculated and applied at the start of `startNextWave()`.
+
+---
+
+## 9. Map Layouts
+
 
 Each world has 3 layout variants, cycled by level: `layouts[(worldLevel - 1) % 3]`.
 
@@ -388,7 +440,7 @@ A layout contains:
 
 ---
 
-## 8. Adding a New World
+## 10. Adding a New World
 
 1. Add entry to `MAP_DEFS` in `constants.js`:
    ```js
@@ -412,7 +464,7 @@ A layout contains:
 
 ---
 
-## 9. Procedural Waves (21+)
+## 11. Procedural Waves (21+)
 
 After wave 20, waves are generated by `WaveManager.generateWave()` in `wave.js`:
 
@@ -430,7 +482,7 @@ These waves use the same HP scaling system. To tune endless mode, adjust the for
 
 ---
 
-## 10. Keyboard Shortcuts
+## 12. Keyboard Shortcuts
 
 Defined in `input.js`:
 
@@ -456,7 +508,8 @@ Defined in `input.js`:
 | W | Set wave (prompt) |
 | L | Set level (prompt) |
 | C | Clear wave debug log (confirm) |
-| R | Clear map record (confirm) |
+| R | Reset progress — clear record, world level, restart at level 1 (confirm) |
+| D | Download wave debug log as CSV |
 
 ### Hidden
 
@@ -468,7 +521,7 @@ To add a new shortcut, add a case in `InputHandler.onKeyDown()`.
 
 ---
 
-## 11. Persistence
+## 13. Persistence
 
 Uses `localStorage` with `td_` prefix:
 
@@ -492,7 +545,7 @@ if (!localStorage.getItem('td_v4_clean')) {
 
 ---
 
-## 12. UI Architecture
+## 14. UI Architecture
 
 ### Three-Layer Canvas
 - **Terrain** (z-index 1): Static ground, path, tower bases. Redrawn only when towers are placed/sold.
@@ -516,7 +569,7 @@ if (!localStorage.getItem('td_v4_clean')) {
 
 ---
 
-## 13. Quick Reference — Common Tuning Tasks
+## 15. Quick Reference — Common Tuning Tasks
 
 | Goal | What to change |
 |------|----------------|
@@ -531,3 +584,7 @@ if (!localStorage.getItem('td_v4_clean')) {
 | Add a new map layout | Add object to the world's `layouts` array |
 | Reset player data after rebalance | Bump the version in `economy.js` |
 | Analyze difficulty | Enable admin mode, review wave reports |
+| Adjust wave modifier frequency | Change `MODIFIER_CHANCE` (0-1) |
+| Disable wave modifiers | Set `MODIFIER_CHANCE = 0` |
+| Adjust early-send bonus | Change `EARLY_SEND_MAX_BONUS` / `EARLY_SEND_DECAY` |
+| Make enemies faster/slower globally | Adjust `speed` in `ENEMY_TYPES` |

@@ -1,4 +1,4 @@
-import { WAVES, TOTAL_WAVES, WAVES_PER_LEVEL, LEVEL_HP_MULTIPLIER, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale } from './constants.js';
+import { WAVES, TOTAL_WAVES, WAVES_PER_LEVEL, LEVEL_HP_MULTIPLIER, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY } from './constants.js';
 
 export class WaveManager {
     constructor(game) {
@@ -8,6 +8,12 @@ export class WaveManager {
         this.waveComplete = false;
         this.betweenWaves = true;
         this.waveCountdown = 0;
+        this.betweenWaveTimer = 0;
+
+        // Wave modifier
+        this.modifier = null;     // key from WAVE_MODIFIERS
+        this.modifierDef = null;  // full modifier object
+        this.hpModifier = 1.0;    // horde HP multiplier
 
         // Spawn state
         this.spawnGroups = [];
@@ -16,13 +22,42 @@ export class WaveManager {
     }
 
     startNextWave() {
+        // Early-send bonus (only between waves, not the first wave)
+        if (this.betweenWaves && this.currentWave > 0) {
+            const bonus = Math.max(0, Math.floor(EARLY_SEND_MAX_BONUS - this.betweenWaveTimer * EARLY_SEND_DECAY));
+            if (bonus > 0) {
+                this.game.economy.addGold(bonus);
+                this.game.particles.spawnFloatingText(CANVAS_W / 2, CANVAS_H / 2.5, `Early send +${bonus}g`, '#00e5ff');
+            }
+        }
+
         this.currentWave++;
         this.spawning = true;
         this.waveComplete = false;
         this.betweenWaves = false;
+        this.betweenWaveTimer = 0;
         this.game.waveElapsed = 0;
 
+        // Roll for wave modifier
+        this.modifier = null;
+        this.modifierDef = null;
+        this.hpModifier = 1.0;
+        if (this.currentWave >= MODIFIER_START_WAVE && Math.random() < MODIFIER_CHANCE) {
+            const keys = Object.keys(WAVE_MODIFIERS);
+            this.modifier = keys[Math.floor(Math.random() * keys.length)];
+            this.modifierDef = WAVE_MODIFIERS[this.modifier];
+        }
+
         const waveDef = this.getWaveDefinition(this.currentWave);
+
+        // Apply horde modifier: more enemies, less HP
+        if (this.modifier === 'horde') {
+            for (const g of waveDef) {
+                g.count = Math.ceil(g.count * this.modifierDef.countMulti);
+            }
+            this.hpModifier = this.modifierDef.hpMulti;
+        }
+
         this.spawnGroups = waveDef;
         this.groupTimers = waveDef.map(g => g.delay || 0);
         this.groupIndices = waveDef.map(() => 0);
@@ -66,11 +101,17 @@ export class WaveManager {
     }
 
     update(dt) {
+        // Track time between waves for early-send bonus
+        if (this.betweenWaves) {
+            this.betweenWaveTimer += dt;
+            return;
+        }
+
         if (!this.spawning) return;
 
         const mapMul = this.game.map.def.worldHpMultiplier || 1;
         const levelMultiplier = Math.pow(LEVEL_HP_MULTIPLIER, this.game.worldLevel - 1);
-        const hpScale = getWaveHPScale(this.currentWave) * mapMul * levelMultiplier;
+        const hpScale = getWaveHPScale(this.currentWave) * mapMul * levelMultiplier * this.hpModifier;
         let allDone = true;
 
         for (let g = 0; g < this.spawnGroups.length; g++) {
@@ -81,7 +122,7 @@ export class WaveManager {
             this.groupTimers[g] -= dt;
 
             if (this.groupTimers[g] <= 0) {
-                this.game.enemies.spawn(group.type, hpScale);
+                this.game.enemies.spawn(group.type, hpScale, this.modifier);
                 this.groupIndices[g]++;
                 this.groupTimers[g] = group.interval;
             }
@@ -127,6 +168,10 @@ export class WaveManager {
         this.spawning = false;
         this.waveComplete = false;
         this.betweenWaves = true;
+        this.betweenWaveTimer = 0;
+        this.modifier = null;
+        this.modifierDef = null;
+        this.hpModifier = 1.0;
         this.spawnGroups = [];
         this.groupTimers = [];
         this.groupIndices = [];

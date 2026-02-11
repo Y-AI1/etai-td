@@ -1,4 +1,4 @@
-import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, WAVES_PER_LEVEL } from './constants.js';
+import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, WAVES_PER_LEVEL, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY } from './constants.js';
 import { Economy } from './economy.js';
 
 export class UI {
@@ -368,8 +368,13 @@ export class UI {
         const eco = game.economy;
         const waves = game.waves;
 
-        // Top bar info
-        this.elWave.textContent = `Wave ${waves.currentWave}/${WAVES_PER_LEVEL}`;
+        // Top bar info — wave + modifier badge
+        const modDef = waves.modifierDef;
+        if (modDef && !waves.betweenWaves) {
+            this.elWave.innerHTML = `Wave ${waves.currentWave}/${WAVES_PER_LEVEL} <span style="background:${modDef.color};color:#000;padding:1px 6px;border-radius:4px;font-size:0.8em;font-weight:700;margin-left:4px">${modDef.name}</span>`;
+        } else {
+            this.elWave.textContent = `Wave ${waves.currentWave}/${WAVES_PER_LEVEL}`;
+        }
         this.elLives.innerHTML = `&#9829; ${eco.lives}`;
         this.elGold.textContent = `\u{1FA99} ${eco.gold}`;
         this.elScore.textContent = `Score ${eco.score}`;
@@ -399,10 +404,15 @@ export class UI {
         const exitBtn = document.getElementById('exit-btn');
         if (exitBtn) exitBtn.style.display = game.state === STATE.MENU ? 'none' : 'inline-block';
 
-        // Next wave button
+        // Next wave button with early-send bonus
         if (waves.betweenWaves && game.state === STATE.PLAYING) {
             this.elNextWaveBtn.style.display = 'inline-block';
-            this.elNextWaveBtn.textContent = `Next Wave (${waves.currentWave + 1})`;
+            const bonus = Math.max(0, Math.floor(EARLY_SEND_MAX_BONUS - waves.betweenWaveTimer * EARLY_SEND_DECAY));
+            if (bonus > 0 && waves.currentWave > 0) {
+                this.elNextWaveBtn.textContent = `Next Wave (${waves.currentWave + 1}) +${bonus}g`;
+            } else {
+                this.elNextWaveBtn.textContent = `Next Wave (${waves.currentWave + 1})`;
+            }
         } else {
             this.elNextWaveBtn.style.display = 'none';
         }

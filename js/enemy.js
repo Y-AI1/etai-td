@@ -1,4 +1,4 @@
-import { ENEMY_TYPES, CELL } from './constants.js';
+import { ENEMY_TYPES, CELL, WAVE_MODIFIERS } from './constants.js';
 import { distance } from './utils.js';
 
 let nextEnemyId = 0;
@@ -34,6 +34,12 @@ export class Enemy {
         this.slowTimer = 0;
         this.slowFactor = 1;
 
+        // Regen (from wave modifier)
+        this.regenRate = 0; // HP per second
+
+        // Wave modifier tag (for visual indicator)
+        this.waveModifier = null;
+
         // Visual
         this.angle = 0;
         this.walkPhase = Math.random() * Math.PI * 2;
@@ -66,6 +72,23 @@ export class Enemy {
         this.hp = Math.min(this.maxHP, this.hp + amount);
     }
 
+    applyModifier(modKey) {
+        if (!modKey) return;
+        this.waveModifier = modKey;
+        const mod = WAVE_MODIFIERS[modKey];
+        if (!mod) return;
+        if (mod.armorBonus) {
+            this.armor = Math.min(0.75, this.armor + mod.armorBonus);
+        }
+        if (mod.speedMulti) {
+            this.speed *= mod.speedMulti;
+            this.baseSpeed *= mod.speedMulti;
+        }
+        if (mod.regenPercent) {
+            this.regenRate = this.maxHP * mod.regenPercent;
+        }
+    }
+
     update(dt) {
         // Animate death
         if (this.deathTimer >= 0) {
@@ -88,6 +111,11 @@ export class Enemy {
                 this.slowFactor = 1;
                 this.slowTimer = 0;
             }
+        }
+
+        // Regen (from wave modifier)
+        if (this.regenRate > 0 && this.hp < this.maxHP) {
+            this.hp = Math.min(this.maxHP, this.hp + this.regenRate * dt);
         }
 
         const currentSpeed = this.baseSpeed * this.slowFactor;
@@ -130,8 +158,9 @@ export class EnemyManager {
         this.enemies = [];
     }
 
-    spawn(typeName, hpScale) {
+    spawn(typeName, hpScale, modifier) {
         const enemy = new Enemy(typeName, hpScale, this.game.map.getEnemyPath());
+        if (modifier) enemy.applyModifier(modifier);
         this.enemies.push(enemy);
         this.game.debug.onEnemySpawn(enemy);
         return enemy;

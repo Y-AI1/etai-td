@@ -82,16 +82,33 @@ Extreme range, high single-target damage, slow fire rate. Has a chance to deal c
 
 | Type | Shape | HP | Speed | Armor | Special | Lives Lost |
 |------|-------|----|-------|-------|---------|-----------|
-| **Grunt** | Pentagon | 30 | Medium | 0% | — | 1 |
-| **Runner** | Diamond | 15 | Fast | 0% | — | 1 |
-| **Tank** | Square | 120 | Slow | 30% | — | 2 |
-| **Healer** | Cross | 50 | Medium | 0% | Heals nearby allies (3 HP/s) | 1 |
-| **Boss** | Hexagon | 400 | Very slow | 20% | Screen shake on death | 5 |
-| **Swarm** | Triangle | 8 | Fast | 0% | Comes in large numbers | 1 |
+| **Grunt** | Pentagon | 30 | Medium (70) | 0% | — | 1 |
+| **Runner** | Diamond | 15 | Fast (125) | 0% | — | 1 |
+| **Tank** | Square | 120 | Slow (40) | 30% | — | 2 |
+| **Healer** | Cross | 50 | Medium (65) | 0% | Heals nearby allies (3 HP/s) | 1 |
+| **Boss** | Hexagon | 400 | Very slow (26) | 20% | Screen shake on death | 5 |
+| **Swarm** | Triangle | 8 | Fast (105) | 0% | Comes in large numbers | 1 |
 
-HP scales exponentially each wave. By wave 20, enemies have roughly 30x the HP of wave 1.
+HP scales exponentially each wave. By wave 20, enemies have roughly 90x the HP of wave 1.
 
 Armor reduces all incoming damage by its percentage (e.g., 30% armor means the enemy takes only 70% damage from every hit).
+
+## Wave Modifiers
+
+Starting from wave 3, some waves get a random modifier that buffs all enemies in that wave. The modifier badge appears next to the wave counter in the top bar.
+
+| Modifier | Effect | Color |
+|----------|--------|-------|
+| **Armored** | All enemies gain +20% armor | Gray |
+| **Swift** | All enemies move 30% faster | Orange |
+| **Regen** | Enemies slowly regenerate HP (0.5%/s) | Green |
+| **Horde** | 40% more enemies spawn, but with 25% less HP | Red |
+
+Modifiers are random — about 35% of waves from wave 3 onward will have one. Plan your defenses to handle any modifier.
+
+## Early-Send Bonus
+
+When a wave ends, pressing N to send the next wave early earns bonus gold. The bonus starts at 50g and decays by 5g per second of waiting. Send immediately for maximum gold, or wait and build first if you need to prepare. The bonus amount is shown on the Next Wave button.
 
 ## Economy
 
@@ -100,8 +117,9 @@ Armor reduces all incoming damage by its percentage (e.g., 30% armor means the e
 - **Wave completion bonus:** 25 + (wave number x 10) gold
 - **Interest:** 2% of your gold at end of each wave
 - **Sell refund:** 60% of total invested gold (base cost + all upgrades)
+- **Early-send bonus:** Up to 50g for sending the next wave immediately (decays 5g/s)
 
-**Tip:** Banking gold between waves earns interest. Sometimes it's better to save up for a key upgrade than to spend immediately.
+**Tip:** Banking gold between waves earns interest, but sending the next wave early gives up to 50g bonus. Balance these two strategies based on whether you need time to build or can handle the pressure.
 
 ## Targeting Modes
 
@@ -133,15 +151,15 @@ Set frost towers to **First** so they slow the leading enemy. Set snipers to **S
 
 ### Early Game (Waves 1-5)
 
-Start with 2-3 Arrow towers at the first major corner. Arrows are the most gold-efficient tower and handle grunts and runners easily. Add a Frost tower before wave 3 when runners appear — their speed makes them dangerous without slowing. Save up so you can buy a Cannon as soon as it unlocks after wave 2. The Sniper unlocks at wave 5 — plan your gold to afford one when it becomes available.
+Start with 2-3 Arrow towers at the first major corner. Runners appear at wave 2 and tanks at wave 4, so build a Frost tower early. Your first healer shows up at wave 5 alongside tanks — prioritize killing healers before they sustain the tanks. The Cannon unlocks after wave 2 and the Sniper at wave 5.
 
 ### Mid Game (Waves 6-10)
 
-Wave 6 is a swarm wave (22 fast enemies). Have at least one Cannon ready for splash damage, or a Lightning tower to chain through them. Wave 10 is your first boss — a Sniper set to Strongest targeting makes a big difference here. Start upgrading your key towers to level 2.
+Wave 6 is a swarm wave (20 fast enemies). Have at least one Cannon or Lightning ready. Wave 9 is a mixed assault with grunts, tanks, healers, and runners — your defenses need to handle all types. Wave 10 is your first boss with tank escorts — a Sniper set to Strongest targeting makes a big difference. Watch for wave modifiers — an Armored or Swift modifier on a tough wave can catch you off guard.
 
 ### Late Game (Waves 11-20)
 
-Healers become a serious threat. Prioritize killing healers before they can sustain tanks and bosses. Set one tower to Weakest targeting to pick off healers (they have moderate HP). Wave 15 has 2 bosses — you need upgraded snipers and cannons by then. Wave 20 throws everything at you: 2 bosses, 4 tanks, 3 healers, and 25 swarm. Fully upgrade your core towers and make sure every path segment is covered.
+Bosses appear more frequently from wave 15 onward, including waves 17, 18, and 19. Healers escort tanks and bosses making them hard to bring down — set a tower to Weakest targeting to pick off healers quickly. Wave 20 has 2 bosses with tanks, healers, and a swarm finale. Use the early-send bonus aggressively to bank extra gold for upgrades.
 
 ### Tower Placement Tips
 

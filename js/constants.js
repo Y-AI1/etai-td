@@ -280,7 +280,7 @@ export const ENEMY_TYPES = {
     grunt: {
         name: 'Grunt',
         baseHP: 30,
-        speed: 60,     // px per second
+        speed: 70,     // px per second (+15%)
         reward: 6,
         livesCost: 1,
         color: '#e74c3c',
@@ -290,7 +290,7 @@ export const ENEMY_TYPES = {
     runner: {
         name: 'Runner',
         baseHP: 15,
-        speed: 110,
+        speed: 125,    // (+15%)
         reward: 5,
         livesCost: 1,
         color: '#f39c12',
@@ -300,7 +300,7 @@ export const ENEMY_TYPES = {
     tank: {
         name: 'Tank',
         baseHP: 120,
-        speed: 35,
+        speed: 40,     // (+15%)
         reward: 16,
         livesCost: 2,
         color: '#2c3e50',
@@ -310,7 +310,7 @@ export const ENEMY_TYPES = {
     healer: {
         name: 'Healer',
         baseHP: 50,
-        speed: 55,
+        speed: 65,     // (+15%)
         reward: 11,
         livesCost: 1,
         color: '#2ecc71',
@@ -322,7 +322,7 @@ export const ENEMY_TYPES = {
     boss: {
         name: 'Boss',
         baseHP: 400,
-        speed: 22,
+        speed: 26,     // (+15%)
         reward: 53,
         livesCost: 5,
         color: '#8e44ad',
@@ -332,7 +332,7 @@ export const ENEMY_TYPES = {
     swarm: {
         name: 'Swarm',
         baseHP: 8,
-        speed: 90,
+        speed: 105,    // (+15%)
         reward: 3,
         livesCost: 1,
         color: '#e67e22',
@@ -344,30 +344,30 @@ export const ENEMY_TYPES = {
 // ── Wave Definitions ───────────────────────────────────────
 // { type, count, interval (seconds between spawns), delay (seconds before group) }
 export const WAVES = [
-    // Wave 1-5: Introduction
+    // Wave 1-5: Introduction — teach mechanics, ramp up faster
     [{ type: 'grunt', count: 8, interval: 1.0, delay: 0 }],
-    [{ type: 'grunt', count: 11, interval: 0.85, delay: 0 }],
-    [{ type: 'grunt', count: 8, interval: 0.8, delay: 0 }, { type: 'runner', count: 4, interval: 0.5, delay: 2 }],
-    [{ type: 'runner', count: 16, interval: 0.3, delay: 0 }],
-    [{ type: 'grunt', count: 10, interval: 0.7, delay: 0 }, { type: 'tank', count: 2, interval: 2.0, delay: 3 }],
-    // Wave 6-10: Variety
-    [{ type: 'swarm', count: 22, interval: 0.22, delay: 0 }, { type: 'tank', count: 1, interval: 0, delay: 3 }],
-    [{ type: 'tank', count: 6, interval: 1.4, delay: 0 }, { type: 'grunt', count: 9, interval: 0.55, delay: 2 }],
-    [{ type: 'runner', count: 12, interval: 0.35, delay: 0 }, { type: 'healer', count: 2, interval: 2.5, delay: 3 }],
-    [{ type: 'grunt', count: 14, interval: 0.55, delay: 0 }, { type: 'healer', count: 3, interval: 1.8, delay: 2 }],
-    [{ type: 'boss', count: 1, interval: 0, delay: 0 }, { type: 'grunt', count: 8, interval: 0.7, delay: 4 }],
-    // Wave 11-15: Escalation
-    [{ type: 'swarm', count: 30, interval: 0.2, delay: 0 }],
-    [{ type: 'tank', count: 6, interval: 1.2, delay: 0 }, { type: 'healer', count: 3, interval: 2.0, delay: 2 }],
-    [{ type: 'runner', count: 15, interval: 0.35, delay: 0 }, { type: 'tank', count: 3, interval: 1.5, delay: 3 }],
-    [{ type: 'grunt', count: 15, interval: 0.5, delay: 0 }, { type: 'runner', count: 10, interval: 0.3, delay: 3 }, { type: 'healer', count: 2, interval: 2.0, delay: 5 }],
-    [{ type: 'boss', count: 2, interval: 12.0, delay: 0 }, { type: 'tank', count: 1, interval: 2.0, delay: 4 }],
-    // Wave 16-20: Endgame
-    [{ type: 'swarm', count: 40, interval: 0.15, delay: 0 }, { type: 'tank', count: 4, interval: 1.0, delay: 2 }],
-    [{ type: 'tank', count: 8, interval: 1.0, delay: 0 }, { type: 'healer', count: 4, interval: 1.5, delay: 2 }],
-    [{ type: 'runner', count: 20, interval: 0.25, delay: 0 }, { type: 'boss', count: 1, interval: 0, delay: 5 }],
-    [{ type: 'grunt', count: 14, interval: 0.4, delay: 0 }, { type: 'tank', count: 6, interval: 1.0, delay: 2 }, { type: 'healer', count: 3, interval: 1.5, delay: 4 }, { type: 'runner', count: 9, interval: 0.3, delay: 6 }],
-    [{ type: 'boss', count: 2, interval: 6.0, delay: 0 }, { type: 'tank', count: 4, interval: 1.2, delay: 3 }, { type: 'healer', count: 3, interval: 2.0, delay: 5 }, { type: 'swarm', count: 25, interval: 0.2, delay: 7 }],
+    [{ type: 'grunt', count: 8, interval: 0.9, delay: 0 }, { type: 'runner', count: 3, interval: 0.5, delay: 2 }],
+    [{ type: 'runner', count: 6, interval: 0.4, delay: 0 }, { type: 'grunt', count: 6, interval: 0.7, delay: 2 }],
+    [{ type: 'runner', count: 14, interval: 0.3, delay: 0 }, { type: 'tank', count: 2, interval: 2.0, delay: 2 }],
+    [{ type: 'grunt', count: 8, interval: 0.7, delay: 0 }, { type: 'tank', count: 3, interval: 1.5, delay: 1 }, { type: 'healer', count: 1, interval: 0, delay: 3 }],
+    // Wave 6-10: Variety — all enemy types in play
+    [{ type: 'swarm', count: 20, interval: 0.2, delay: 0 }, { type: 'tank', count: 2, interval: 1.5, delay: 2 }],
+    [{ type: 'tank', count: 5, interval: 1.2, delay: 0 }, { type: 'healer', count: 2, interval: 2.0, delay: 1 }, { type: 'grunt', count: 6, interval: 0.5, delay: 2 }],
+    [{ type: 'runner', count: 15, interval: 0.3, delay: 0 }, { type: 'healer', count: 3, interval: 1.5, delay: 2 }],
+    [{ type: 'grunt', count: 10, interval: 0.5, delay: 0 }, { type: 'tank', count: 4, interval: 1.2, delay: 1 }, { type: 'healer', count: 2, interval: 2.0, delay: 2 }, { type: 'runner', count: 6, interval: 0.4, delay: 3 }],
+    [{ type: 'boss', count: 1, interval: 0, delay: 0 }, { type: 'tank', count: 2, interval: 1.5, delay: 2 }, { type: 'grunt', count: 8, interval: 0.6, delay: 3 }],
+    // Wave 11-15: Escalation — composition complexity rises
+    [{ type: 'swarm', count: 25, interval: 0.18, delay: 0 }, { type: 'tank', count: 3, interval: 1.0, delay: 2 }],
+    [{ type: 'tank', count: 6, interval: 1.0, delay: 0 }, { type: 'healer', count: 3, interval: 1.5, delay: 1 }, { type: 'runner', count: 8, interval: 0.35, delay: 2 }],
+    [{ type: 'runner', count: 12, interval: 0.3, delay: 0 }, { type: 'tank', count: 4, interval: 1.2, delay: 2 }, { type: 'healer', count: 2, interval: 2.0, delay: 3 }],
+    [{ type: 'grunt', count: 10, interval: 0.45, delay: 0 }, { type: 'runner', count: 8, interval: 0.3, delay: 2 }, { type: 'healer', count: 3, interval: 1.5, delay: 3 }, { type: 'tank', count: 2, interval: 1.5, delay: 4 }],
+    [{ type: 'boss', count: 2, interval: 8.0, delay: 0 }, { type: 'tank', count: 3, interval: 1.5, delay: 2 }, { type: 'healer', count: 2, interval: 2.0, delay: 3 }],
+    // Wave 16-20: Endgame — tighter waves, bosses more frequent
+    [{ type: 'swarm', count: 30, interval: 0.15, delay: 0 }, { type: 'tank', count: 4, interval: 0.8, delay: 1 }, { type: 'healer', count: 2, interval: 1.5, delay: 2 }],
+    [{ type: 'tank', count: 6, interval: 0.8, delay: 0 }, { type: 'healer', count: 4, interval: 1.2, delay: 1 }, { type: 'boss', count: 1, interval: 0, delay: 3 }],
+    [{ type: 'runner', count: 12, interval: 0.25, delay: 0 }, { type: 'boss', count: 1, interval: 0, delay: 2 }, { type: 'tank', count: 3, interval: 1.0, delay: 3 }],
+    [{ type: 'grunt', count: 8, interval: 0.4, delay: 0 }, { type: 'tank', count: 4, interval: 0.8, delay: 1 }, { type: 'healer', count: 2, interval: 1.5, delay: 2 }, { type: 'boss', count: 1, interval: 0, delay: 3 }],
+    [{ type: 'boss', count: 2, interval: 5.0, delay: 0 }, { type: 'tank', count: 3, interval: 1.0, delay: 2 }, { type: 'healer', count: 2, interval: 1.5, delay: 3 }, { type: 'swarm', count: 15, interval: 0.18, delay: 4 }],
 ];
 
 export const TOTAL_WAVES = 20;
@@ -382,5 +382,21 @@ export const MAX_PARTICLES = 500;
 
 // ── HP Scaling ─────────────────────────────────────────────
 export function getWaveHPScale(wave) {
-    return wave * Math.pow(1.10, wave) * 0.9;
+    // Smoother curve: harder early, less extreme late
+    // Wave 1≈1.08, Wave 10≈21.6, Wave 20≈93 (was 121)
+    return wave * Math.pow(1.08, wave);
 }
+
+// ── Wave Modifiers ────────────────────────────────────────
+export const WAVE_MODIFIERS = {
+    armored: { name: 'Armored', desc: '+20% armor', color: '#95a5a6', armorBonus: 0.20 },
+    swift:   { name: 'Swift',   desc: '+30% speed', color: '#e67e22', speedMulti: 1.30 },
+    regen:   { name: 'Regen',   desc: 'HP regen',   color: '#2ecc71', regenPercent: 0.005 },
+    horde:   { name: 'Horde',   desc: 'More enemies, less HP', color: '#e74c3c', countMulti: 1.4, hpMulti: 0.75 },
+};
+export const MODIFIER_START_WAVE = 3;
+export const MODIFIER_CHANCE = 0.35;
+
+// ── Early-Send Bonus ──────────────────────────────────────
+export const EARLY_SEND_MAX_BONUS = 50;
+export const EARLY_SEND_DECAY = 5; // gold lost per second of waiting

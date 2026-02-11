@@ -407,6 +407,21 @@ export class Renderer {
                 ctx.stroke();
             }
 
+            // Wave modifier glow (armored=gray, swift=orange, regen=green)
+            if (e.waveModifier && !isDying && e.waveModifier !== 'horde') {
+                const modColors = { armored: 'rgba(149,165,166,0.4)', swift: 'rgba(230,126,34,0.4)', regen: 'rgba(46,204,113,0.4)' };
+                const mc = modColors[e.waveModifier];
+                if (mc) {
+                    ctx.strokeStyle = mc;
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([3, 3]);
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, r + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
             // Health bar (skip for dying enemies)
             if (!isDying && e.alive) {
                 const barW = e.radius * 2.5;
@@ -1540,6 +1555,7 @@ export class Renderer {
   <div class="ap-header" style="color:#9b59b6">Difficulty</div>
   <div class="ap-row" style="color:#fff">${worldName} L${level} W${wave}/${totalWaves}</div>
   <div class="ap-row" style="color:#f1c40f">HP: ${worldHpMul}×${levelHpMul.toFixed(1)}×${waveHpScale.toFixed(1)} = ${finalMul.toFixed(1)}</div>
+  ${this.game.waves.modifierDef ? `<div class="ap-row">Modifier: <span style="color:${this.game.waves.modifierDef.color};font-weight:700">${this.game.waves.modifierDef.name}</span> <span style="color:#888">${this.game.waves.modifierDef.desc}</span></div>` : `<div class="ap-row" style="color:#555">No modifier</div>`}
 </div>
 <div class="ap-section">
   <div class="ap-header" style="color:#e0e0e0">Realtime</div>
