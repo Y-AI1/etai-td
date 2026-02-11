@@ -31,9 +31,19 @@ export class UI {
         if (!container) return;
         container.innerHTML = '';
 
+        // Show player level on menu
+        const playerLevel = Economy.getPlayerLevel();
+        const levelEl = document.getElementById('menu-player-level');
+        if (levelEl) {
+            levelEl.textContent = `Level ${playerLevel + 1}`;
+        }
+
         for (const [id, def] of Object.entries(MAP_DEFS)) {
+            const reqLevel = def.requiredLevel || 0;
+            const mapLocked = reqLevel > 0 && (playerLevel + 1) < reqLevel;
+
             const card = document.createElement('div');
-            card.className = 'map-card';
+            card.className = 'map-card' + (mapLocked ? ' map-locked' : '');
             card.dataset.mapId = id;
 
             // Mini preview canvas
@@ -57,22 +67,27 @@ export class UI {
             const levelBadge = document.createElement('span');
             levelBadge.className = 'map-card-level';
             levelBadge.dataset.mapId = id;
-            levelBadge.style.background = def.themeColor;
-            const wl = Economy.getWorldLevel(id);
-            levelBadge.textContent = wl > 0 ? `Level ${wl}` : 'New!';
+            if (mapLocked) {
+                levelBadge.textContent = `Locked (Lv.${reqLevel})`;
+                levelBadge.style.background = '#555';
+            } else {
+                levelBadge.style.background = def.themeColor;
+            }
 
             header.appendChild(name);
             header.appendChild(levelBadge);
 
             const desc = document.createElement('div');
             desc.className = 'map-card-desc';
-            desc.textContent = def.description;
+            desc.textContent = mapLocked ? `Reach Level ${reqLevel} to unlock` : def.description;
 
             const record = document.createElement('div');
             record.className = 'map-card-record';
             record.dataset.mapId = id;
-            const rec = Economy.getMapRecord(id);
-            record.textContent = rec > 0 ? `Record: ${rec}` : 'No record yet';
+            if (!mapLocked) {
+                const rec = Economy.getMapRecord(id);
+                record.textContent = rec > 0 ? `Record: ${rec}` : 'No record yet';
+            }
 
             info.appendChild(header);
             info.appendChild(desc);
@@ -81,11 +96,13 @@ export class UI {
             card.appendChild(preview);
             card.appendChild(info);
 
-            card.addEventListener('click', () => {
-                this.game.audio.ensureContext();
-                this.game.selectMap(id);
-                this.game.start();
-            });
+            if (!mapLocked) {
+                card.addEventListener('click', () => {
+                    this.game.audio.ensureContext();
+                    this.game.selectMap(id);
+                    this.game.start();
+                });
+            }
 
             container.appendChild(card);
         }
@@ -171,18 +188,8 @@ export class UI {
     }
 
     refreshMapRecords() {
-        const recordEls = document.querySelectorAll('.map-card-record');
-        for (const el of recordEls) {
-            const mapId = el.dataset.mapId;
-            const rec = Economy.getMapRecord(mapId);
-            el.textContent = rec > 0 ? `Record: ${rec}` : 'No record yet';
-        }
-        const levelEls = document.querySelectorAll('.map-card-level');
-        for (const el of levelEls) {
-            const mapId = el.dataset.mapId;
-            const wl = Economy.getWorldLevel(mapId);
-            el.textContent = wl > 0 ? `Level ${wl}` : 'New!';
-        }
+        // Rebuild map select to refresh lock states
+        this.buildMapSelect();
     }
 
     setupTowerPanel() {
@@ -324,10 +331,10 @@ export class UI {
             }
         });
 
-        // Mute button
+        // Mute badge
         this.elMuteBtn.addEventListener('click', () => {
             this.game.audio.toggleMute();
-            this.elMuteBtn.textContent = this.game.audio.muted ? 'Unmute' : 'Mute';
+            this.update();
         });
 
         // Next wave button
@@ -400,15 +407,24 @@ export class UI {
             }
         }
 
-        // Speed button
+        // Speed badge
         this.elSpeedBtn.textContent = `${game.speed}x`;
 
-        // Pause button
-        this.elPauseBtn.textContent = game.state === STATE.PAUSED ? 'Resume' : 'Pause';
+        // Pause badge
+        this.elPauseBtn.innerHTML = game.state === STATE.PAUSED ? '&#9654; Resume' : '&#9208; Pause';
 
-        // Quit button — hide on menu
+        // Mute badge
+        if (game.audio.muted) {
+            this.elMuteBtn.innerHTML = '&#128263; Muted';
+            this.elMuteBtn.classList.add('muted');
+        } else {
+            this.elMuteBtn.innerHTML = '&#128264; Sound';
+            this.elMuteBtn.classList.remove('muted');
+        }
+
+        // Quit badge — hide on menu
         const exitBtn = document.getElementById('exit-btn');
-        if (exitBtn) exitBtn.style.display = game.state === STATE.MENU ? 'none' : 'inline-block';
+        if (exitBtn) exitBtn.style.display = game.state === STATE.MENU ? 'none' : 'inline-flex';
 
         // Next wave button with early-send bonus
         if (waves.betweenWaves && game.state === STATE.PLAYING) {

@@ -88,6 +88,7 @@ export const MAP_DEFS = {
         name: 'Split Creek',
         themeColor: '#d4a026',
         worldHpMultiplier: 0.60,
+        requiredLevel: 5,
         environment: 'desert',
         description: 'The path forks midway — enemies randomly pick a branch.',
         layouts: [
@@ -155,6 +156,7 @@ export const MAP_DEFS = {
         name: 'The Gauntlet',
         themeColor: '#c0392b',
         worldHpMultiplier: 0.65,
+        requiredLevel: 10,
         environment: 'lava',
         description: 'A short direct path — enemies arrive fast, every tower counts.',
         layouts: [
@@ -311,7 +313,7 @@ export const ENEMY_TYPES = {
     },
     tank: {
         name: 'Tank',
-        baseHP: 108,
+        baseHP: 100,
         speed: 40,     // (+15%)
         reward: 17,
         livesCost: 2,

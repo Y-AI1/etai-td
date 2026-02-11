@@ -20,13 +20,13 @@
                 <span id="record-info" class="record-badge">Record 0</span>
             </div>
             <div class="controls">
+                <button id="next-wave-btn">Next Wave</button>
                 <span id="gold-info" class="gold-badge">&#x1FA99; 200</span>
                 <span id="lives-info" class="lives-badge">20</span>
-                <button id="next-wave-btn">Next Wave</button>
-                <button id="speed-btn" class="speed-btn active">2x</button>
-                <button id="pause-btn">Start</button>
-                <button id="mute-btn">Mute</button>
-                <button id="exit-btn">Quit</button>
+                <span id="speed-btn" class="speed-badge">2x</span>
+                <span id="pause-btn" class="pause-badge">&#9208; Pause</span>
+                <span id="mute-btn" class="mute-badge">&#128264; Sound</span>
+                <span id="exit-btn" class="exit-badge">&#10005; Quit</span>
             </div>
         </div>
 
@@ -45,9 +45,10 @@
             <div id="menu-screen" class="game-screen visible">
                 <div class="screen-title">Etai's Tower Defence</div>
                 <div class="screen-subtitle">Choose a world and climb the levels!</div>
+                <div id="menu-player-level"></div>
                 <div id="map-select"></div>
                 <div class="key-hints">
-                    <kbd>1</kbd>-<kbd>5</kbd> Select tower &nbsp;
+                    <kbd>1</kbd>-<kbd>6</kbd> Select tower &nbsp;
                     <kbd>Space</kbd> Pause &nbsp;
                     <kbd>N</kbd> Next wave &nbsp;
                     <kbd>+</kbd>/<kbd>-</kbd> Speed

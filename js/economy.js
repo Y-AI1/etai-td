@@ -67,18 +67,18 @@ export class Economy {
         localStorage.removeItem(`${RECORD_PREFIX}_${mapId}`);
     }
 
-    static clearWorldLevel(mapId) {
-        localStorage.removeItem(`td_world_level_${mapId}`);
+    static clearPlayerLevel() {
+        localStorage.removeItem('td_player_level');
     }
 
-    static getWorldLevel(mapId) {
-        return parseInt(localStorage.getItem(`td_world_level_${mapId}`)) || 0;
+    static getPlayerLevel() {
+        return parseInt(localStorage.getItem('td_player_level')) || 0;
     }
 
-    static setWorldLevel(mapId, level) {
-        const current = Economy.getWorldLevel(mapId);
+    static setPlayerLevel(level) {
+        const current = Economy.getPlayerLevel();
         if (level > current) {
-            localStorage.setItem(`td_world_level_${mapId}`, level);
+            localStorage.setItem('td_player_level', level);
         }
     }
 }

@@ -14,9 +14,9 @@ Press **`** (backtick) to toggle admin mode. When active, a sidebar panel appear
 |-----|--------|-------------|
 | **K** | Kill all enemies on screen (with screen shake, flash, and explosion effects) | No |
 | **W** | Set wave — prompts for a wave number, clears the field, and jumps to that wave | Yes (prompt) |
-| **L** | Set level — prompts for a level number, full reset at that world level | Yes (prompt) |
+| **L** | Set level — prompts for a level number, full reset at that player level | Yes (prompt) |
 | **C** | Clear the entire wave debug log from localStorage | Yes (confirm dialog) |
-| **R** | Reset progress — clears record, world level, and restarts at level 1 | Yes (confirm dialog) |
+| **R** | Reset progress — clears record, player level, and restarts at level 1 | Yes (confirm dialog) |
 | **D** | Download wave debug log as CSV file | No |
 | **`** | Toggle admin mode on/off | No |
 
@@ -49,7 +49,7 @@ The `WaveDebugger` class (`js/debug.js`) collects per-wave statistics during gam
 |-------|-------------|
 | `timestamp` | When the wave ended (ISO string) |
 | `world` | Map name |
-| `level` | World level |
+| `level` | Player level |
 | `wave` | Wave number |
 | `worldHpMul` | World HP multiplier |
 | `levelHpMul` | Level HP multiplier |
@@ -137,7 +137,8 @@ serpentine: {
 
 | Field | Purpose | Tuning notes |
 |-------|---------|--------------|
-| `worldHpMultiplier` | Scales ALL enemy HP for this world | Compensates for path length — shorter paths get lower values to keep difficulty balanced. Current: Serpentine 1.0, Split Creek 0.80, Gauntlet 0.65 |
+| `worldHpMultiplier` | Scales ALL enemy HP for this world | Compensates for path length — shorter paths get lower values to keep difficulty balanced. Current: Serpentine 1.0, Split Creek 0.60, Gauntlet 0.65 |
+| `requiredLevel` | Minimum player level to unlock this map | Serpentine: none (always open), Split Creek: 5, Gauntlet: 10 |
 | `environment` | Visual theme (`forest`/`desert`/`lava`) | No gameplay effect |
 | `layouts` | Array of 3 path variants (cycled by level) | See "Map Layouts" below |
 
@@ -191,7 +192,7 @@ The `WAVES` array (20 entries) defines enemy types, counts, and spawn timing per
 
 ```js
 export function getWaveHPScale(wave) {
-    return wave * Math.pow(1.08, wave);
+    return wave * Math.pow(1.10, wave);
 }
 ```
 
@@ -199,17 +200,21 @@ This exponential curve determines how much base HP is multiplied per wave number
 
 | Wave | HP Scale |
 |------|----------|
-| 1 | 1.08 |
-| 5 | 7.35 |
-| 10 | 21.6 |
-| 15 | 47.6 |
-| 20 | 93.2 |
+| 1 | 1.10 |
+| 5 | 8.05 |
+| 10 | 25.9 |
+| 15 | 62.7 |
+| 20 | 134.5 |
 
-**The exponent base (1.08) is the most impactful tuning knob in the game.** Changing it from 1.08 to 1.10 roughly increases wave-20 difficulty by 30%. Handle with care.
+**The exponent base (1.10) is the most impactful tuning knob in the game.** Changing it from 1.10 to 1.12 roughly increases wave-20 difficulty by 50%. Handle with care.
 
 ---
 
 ## 3. Tuning Levels
+
+### Player Level System
+
+Player level is a single global value that persists across all maps and sessions. It's stored in `localStorage` as `td_player_level`.
 
 ```js
 export const LEVEL_HP_MULTIPLIER = 1.1;
@@ -222,9 +227,16 @@ Each level multiplies enemy HP by this factor:
 - Level 4: x1.33
 - Level 5: x1.46
 
+**Level progression:** Beat 20 waves on any map to level up. The player level is shared — leveling up on Serpentine counts toward unlocking Split Creek and The Gauntlet.
+
+**Map unlock requirements** (set via `requiredLevel` in `MAP_DEFS`):
+- Serpentine Valley: always open (no `requiredLevel`)
+- Split Creek: Level 5
+- The Gauntlet: Level 10
+
 On level-up, the player gets:
 - Lives reset to `STARTING_LIVES`
-- Gold bonus: `25 + worldLevel x 15`
+- Gold bonus: `25 + level x 15`
 - A new map layout (cycles through 3 variants)
 
 To make level progression steeper, increase `LEVEL_HP_MULTIPLIER` (e.g. 1.2). To make it gentler, reduce it (e.g. 1.05).
@@ -241,7 +253,7 @@ Defined in `ENEMY_TYPES`. Each enemy has:
 | `speed` | Pixels per second |
 | `reward` | Gold earned on kill (also multiplied by 1.10 in code) |
 | `livesCost` | Lives lost if enemy reaches the castle |
-| `armor` | Damage reduction (0.0-1.0). Tank has 0.30 = takes 30% less damage |
+| `armor` | Damage reduction (0.0-1.0). Tank has 0.27 = takes 27% less damage |
 | `radius` | Visual size in pixels |
 | `healRadius` / `healRate` | Healer-only: range (grid cells) and HP/sec to nearby allies |
 
@@ -251,7 +263,7 @@ Defined in `ENEMY_TYPES`. Each enemy has:
 |------|--------|-------|-------|------|
 | Grunt | 30 | 70 | 0 | Baseline |
 | Runner | 15 | 125 | 0 | Fast, fragile |
-| Tank | 120 | 40 | 0.30 | Slow, tanky |
+| Tank | 108 | 40 | 0.27 | Slow, tanky |
 | Healer | 50 | 65 | 0 | Heals nearby allies |
 | Boss | 400 | 26 | 0.20 | High HP, slow |
 | Swarm | 8 | 105 | 0 | Cheap, fast, overwhelming in numbers |
@@ -285,6 +297,7 @@ arrow: {
 |-------|---------|
 | `cost` | Gold to place |
 | `unlockWave` | Wave number when tower becomes available (undefined = always) |
+| `unlockLevel` | Player level required to unlock (undefined = always) |
 | `damage` | Damage per hit |
 | `range` | Range in grid cells |
 | `fireRate` | Seconds between shots (lower = faster) |
@@ -293,55 +306,70 @@ arrow: {
 
 **Current unlock schedule:**
 
-| Tower | Unlock |
-|-------|--------|
-| Arrow | Wave 1 |
-| Frost | Wave 1 |
-| Lightning | Wave 1 |
-| Cannon | Wave 2 |
-| Sniper | Wave 5 |
+| Tower | Key | Unlock | Cost |
+|-------|-----|--------|------|
+| Arrow | 1 | Wave 1 | $50 |
+| Fire Arrow | 2 | Level 2 | $300 |
+| Frost | 3 | Wave 1 | $75 |
+| Lightning | 4 | Wave 1 | $125 |
+| Cannon | 5 | Wave 2 | $100 |
+| Sniper | 6 | Wave 5 | $150 |
 
 **Special tower mechanics:**
 
 | Tower | Special fields | Behavior |
 |-------|---------------|----------|
+| Fire Arrow | `burnDamage`, `burnDuration` | Burns enemies (DoT that bypasses armor) |
 | Frost | `slowFactor`, `slowDuration` | Slows enemies (factor 0.3 = 70% slow) |
 | Lightning | `chainCount`, `chainRange`, `chainDecay` | Hits bounce to nearby enemies |
 | Cannon | `splashRadius` | AoE damage in grid cells |
 | Sniper | `critChance`, `critMulti` | Random crit hits for bonus damage |
 
+### Burn Mechanic (Fire Arrow)
+
+The burn DoT is applied on hit and **bypasses armor entirely** — burn damage is subtracted directly from HP without going through `takeDamage()`. When a new burn is applied to an already-burning enemy, the stronger burn (higher DPS or longer duration) takes effect.
+
+Current burn stats:
+- Level 1: 3 DPS for 3.0s (9 total)
+- Level 2: 5 DPS for 3.5s (17.5 total)
+- Level 3: 8 DPS for 4.0s (32 total)
+
 **DPS calculation:**
 - Basic: `damage / fireRate`
+- Fire Arrow effective: `(damage / fireRate) + burnDamage` (burn runs in parallel)
 - Cannon effective: `(damage / fireRate) x avg_targets_in_splash`
 - Sniper effective: `(damage / fireRate) x (1 + critChance x (critMulti - 1))`
 
 **Adding a new tower type:**
 1. Add entry to `TOWER_TYPES` with `levels` array
-2. Add key mapping in `input.js` -> `TOWER_KEYS` (e.g. `'6': 'newTower'`)
+2. Add key mapping in `input.js` -> `TOWER_KEYS` (e.g. `'7': 'newTower'`)
 3. Add rendering in `renderer.js` -> turret draw method + base drawing
 4. Add sound in `audio.js` -> `playShoot()` method
 5. If special projectile behavior, update `projectile.js`
-6. Tower hover tooltip auto-generates from `TOWER_TYPES` data (no manual update needed)
+6. If `unlockLevel` is set, `ui.js` and `input.js` handle gating automatically
+7. Tower hover tooltip auto-generates from `TOWER_TYPES` data (no manual update needed)
 
 ---
 
 ## 6. Economy
 
 ```js
-export const STARTING_GOLD = 200;
+export const STARTING_GOLD = 300;
 export const STARTING_LIVES = 20;
 export const SELL_REFUND = 0.6;       // 60% of total invested
 export const INTEREST_RATE = 0.02;    // 2% of gold between waves
 export const WAVE_BONUS_BASE = 25;    // base gold per wave clear
-export const WAVE_BONUS_PER = 10;     // additional per wave number
+export const WAVE_BONUS_PER = 8;      // additional per wave number
 ```
 
 **Income per wave clear:** `WAVE_BONUS_BASE + currentWave x WAVE_BONUS_PER + floor(gold x INTEREST_RATE)`
 
 **Kill income:** `enemy.reward x 1.10` (hardcoded 10% bonus in `enemy.js`)
 
+**Level-up bonus:** `25 + level x 15` (gold added on level-up, lives reset to 20)
+
 **Tuning tips:**
-- `STARTING_GOLD` controls early-game tower options (200 = 1 cannon or 1 sniper, 2 arrows + 1 frost, etc.)
+- `STARTING_GOLD` controls early-game tower options (300 = 1 fire arrow, or 2 arrows + 1 cannon, etc.)
 - `INTEREST_RATE` rewards banking gold — higher values incentivize delaying purchases
 - `SELL_REFUND` at 0.6 means repositioning costs 40% — lower values punish mistakes more
 
@@ -400,7 +428,7 @@ At default values: 50g for instant send, 40g after 2 seconds, 0g after 10 second
 ## 9. Map Layouts
 
 
-Each world has 3 layout variants, cycled by level: `layouts[(worldLevel - 1) % 3]`.
+Each world has 3 layout variants, cycled by level: `layouts[(level - 1) % 3]`.
 
 A layout contains:
 
@@ -449,7 +477,8 @@ A layout contains:
        name: 'My World',
        themeColor: '#hex',
        worldHpMultiplier: 0.85,
-       environment: 'forest',  // or create a new one
+       requiredLevel: 15,       // player level needed to unlock
+       environment: 'forest',   // or create a new one
        description: '...',
        layouts: [ /* 3 layout variants */ ],
    }
@@ -462,6 +491,7 @@ A layout contains:
 3. Map selection is built dynamically from `MAP_DEFS` — no HTML changes needed
 4. Add any new CSS for the theme color
 5. Set `worldHpMultiplier` based on path length (shorter path = lower multiplier)
+6. Set `requiredLevel` to gate access behind player progression
 
 ---
 
@@ -491,7 +521,7 @@ Defined in `input.js`:
 
 | Key | Action |
 |-----|--------|
-| 1-5 | Select tower type (arrow, frost, lightning, cannon, sniper) |
+| 1-6 | Select tower type (Arrow, Fire Arrow, Frost, Lightning, Cannon, Sniper) |
 | Space | Start game / toggle pause |
 | Escape | Cancel selection |
 | N | Send next wave early (between waves only) |
@@ -509,7 +539,7 @@ Defined in `input.js`:
 | W | Set wave (prompt) |
 | L | Set level (prompt) |
 | C | Clear wave debug log (confirm) |
-| R | Reset progress — clear record, world level, restart at level 1 (confirm) |
+| R | Reset progress — clear record, player level, restart at level 1 (confirm) |
 | D | Download wave debug log as CSV |
 
 ### Hidden
@@ -528,14 +558,16 @@ Uses `localStorage` with `td_` prefix:
 
 | Key | Purpose |
 |-----|---------|
+| `td_player_level` | Global player level (highest reached) |
 | `td_high_score_{mapId}` | Best score per world |
-| `td_world_level_{mapId}` | Highest level reached per world |
 | `td_wave_debug_log_v2` | Append-only wave analysis log (JSON array) |
-| `td_v3_clean` | Version flag — set to force-clear old data on first load |
+| `td_v4_clean` | Version flag — set to force-clear old data on first load |
+
+**Player level** is a single global value. `Economy.setPlayerLevel(level)` only writes if the new level is higher than the stored value (ratchet — never goes down).
 
 **To reset all player progress:** Bump the version check in `economy.js`:
 ```js
-if (!localStorage.getItem('td_v4_clean')) {
+if (!localStorage.getItem('td_v5_clean')) {
     // clears all td_ keys
 }
 ```
@@ -553,6 +585,12 @@ if (!localStorage.getItem('td_v4_clean')) {
 - **Game** (z-index 2): Enemies, turrets, projectiles, particles. Redrawn every frame at 60fps.
 - **UI** (z-index 3): Hover highlights, range circles, selection boxes, wave number overlay.
 
+### Menu Screen
+- Shows player level at the top
+- Map cards built dynamically from `MAP_DEFS`
+- Locked maps show "Locked (Lv.X)" badge and "Reach Level X to unlock" description
+- Locked maps have `cursor: not-allowed` but are not dimmed
+
 ### Admin Panel
 - HTML sidebar (`#admin-panel`) outside the canvas, to the right.
 - Visibility toggled via `.visible` class.
@@ -561,12 +599,15 @@ if (!localStorage.getItem('td_v4_clean')) {
 ### Tower Hover Tooltips
 - Pre-rendered tower preview images (canvas -> dataURL) created once during setup.
 - Tooltip card shows on `mouseenter` of tower buttons with preview, stats, and special ability.
+- Fire Arrow tooltip shows burn DPS and duration.
 - Positioned with `position: fixed` above the hovered button.
 
 ### Visual Effects
 - **Screen shake:** `game.triggerShake(intensity, duration)` — random offset applied during `drawFrame`.
 - **Screen flash:** `game.screenFlash` — white overlay with alpha fade, rendered after particles.
 - **Particle explosions:** Object-pooled system (500 max) for enemy deaths and Kill All.
+- **Burn visual:** Orange glow ring + flickering flame particles on burning enemies.
+- **Fire Arrow ambient:** Flickering ember glow + orbiting embers on placed fire arrow towers.
 
 ---
 
@@ -581,7 +622,8 @@ if (!localStorage.getItem('td_v4_clean')) {
 | Give players more/less starting resources | Change `STARTING_GOLD` / `STARTING_LIVES` |
 | Buff/nerf a tower | Edit its `levels` array in `TOWER_TYPES` |
 | Buff/nerf an enemy type | Edit its stats in `ENEMY_TYPES` |
-| Change tower unlock timing | Set `unlockWave` in `TOWER_TYPES` |
+| Change tower unlock timing | Set `unlockWave` or `unlockLevel` in `TOWER_TYPES` |
+| Change map unlock requirements | Set `requiredLevel` in `MAP_DEFS` |
 | Add a new map layout | Add object to the world's `layouts` array |
 | Reset player data after rebalance | Bump the version in `economy.js` |
 | Analyze difficulty | Enable admin mode, review wave reports |

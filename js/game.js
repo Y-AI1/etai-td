@@ -1,4 +1,4 @@
-import { STATE, CANVAS_W, CANVAS_H, STARTING_LIVES } from './constants.js';
+import { STATE, CANVAS_W, CANVAS_H } from './constants.js';
 import { GameMap } from './map.js';
 import { TowerManager } from './tower.js';
 import { EnemyManager } from './enemy.js';
@@ -61,7 +61,7 @@ export class Game {
     start() {
         if (!this.selectedMapId) return;
         this.audio.ensureContext();
-        this.worldLevel = Economy.getWorldLevel(this.selectedMapId) + 1;
+        this.worldLevel = Economy.getPlayerLevel() + 1;
         // Recreate map with the correct layout for this world level
         this.map = new GameMap(this.selectedMapId, (this.worldLevel - 1) % 3);
         this.renderer.drawTerrain();
@@ -95,15 +95,9 @@ export class Game {
         this.ui.showScreen('game-over');
     }
 
-    victory() {
-        this.state = STATE.VICTORY;
-        this.audio.playVictory();
-        this.ui.showScreen('victory');
-    }
-
     levelUp() {
         this.state = STATE.LEVEL_UP;
-        Economy.setWorldLevel(this.selectedMapId, this.worldLevel);
+        Economy.setPlayerLevel(this.worldLevel);
         this.audio.playVictory();
         this.ui.showScreen('level-up');
     }
@@ -204,7 +198,7 @@ export class Game {
     }
 
     adminSetLevel(level) {
-        // Full restart at a specific world level
+        // Full restart at a specific player level (session only, not saved)
         this.worldLevel = level;
         this.elapsedTime = 0;
         this.waveElapsed = 0;

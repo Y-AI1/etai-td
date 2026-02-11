@@ -104,6 +104,12 @@ export class InputHandler {
                     this.game.togglePause();
                 }
                 break;
+            case 'p':
+            case 'P':
+                if (this.game.state === STATE.PLAYING || this.game.state === STATE.PAUSED) {
+                    this.game.togglePause();
+                }
+                break;
             case 'Escape':
                 this.cancelSelection();
                 break;
@@ -191,9 +197,9 @@ export class InputHandler {
             case 'r':
             case 'R':
                 if (this.game.adminMode && this.game.selectedMapId) {
-                    if (confirm(`Clear record & reset level for ${this.game.selectedMapId}?`)) {
+                    if (confirm(`Clear record & reset player level?`)) {
                         Economy.clearMapRecord(this.game.selectedMapId);
-                        Economy.clearWorldLevel(this.game.selectedMapId);
+                        Economy.clearPlayerLevel();
                         this.game.economy.record = 0;
                         this.game.economy.score = 0;
                         this.game.adminSetLevel(1);

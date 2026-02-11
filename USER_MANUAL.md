@@ -2,23 +2,36 @@
 
 Defend your base against 20 waves of enemies by building and upgrading towers along the path. Enemies follow the path from entry to exit — if they reach the end, you lose lives. Lose all 20 lives and it's game over.
 
+## Player Level
+
+You have a global player level that persists across all games. Beat 20 waves on any map to level up. Your level unlocks new maps and towers:
+
+| Level | Unlocks |
+|-------|---------|
+| 1 | Serpentine Valley (always available) |
+| 2 | Fire Arrow tower |
+| 5 | Split Creek map |
+| 10 | The Gauntlet map |
+
+Enemies get 1.1x HP per level, so higher levels are progressively harder.
+
 ## Maps
 
 Each world offers a different strategic challenge. Enemy HP is adjusted per world to keep difficulty balanced — shorter paths have lower HP multipliers so no world is inherently harder than another.
 
-| Map | Style | Description |
-|-----|-------|-------------|
-| **Serpentine Valley** | Long path | Winding path with 10+ turns. Lots of build space. Lightning towers shine at corners where the path doubles back. |
-| **Split Creek** | Split path | Path forks into two branches midway. Enemies randomly take upper or lower route, forcing you to defend both sides. |
-| **The Gauntlet** | Short path | Direct path with only 3 turns. Fewer tower slots — every placement counts. Concentrated killzones are essential. |
+| Map | Style | HP Multiplier | Required Level | Description |
+|-----|-------|---------------|----------------|-------------|
+| **Serpentine Valley** | Long path | 1.0x | 1 | Winding path with 10+ turns. Lots of build space. Lightning towers shine at corners where the path doubles back. |
+| **Split Creek** | Split path | 0.60x | 5 | Path forks into two branches midway. Enemies randomly take upper or lower route, forcing you to defend both sides. |
+| **The Gauntlet** | Short path | 0.65x | 10 | Direct path with only 3 turns. Fewer tower slots — every placement counts. Concentrated killzones are essential. |
 
-Each world has its own infinite level progression. Beat 20 waves to level up. Enemies get 1.1x HP per level.
+Each map has 3 layout variants that cycle as you level up.
 
 ## Towers
 
 Hover over any tower button in the bottom bar to see a preview card with the tower image, stats, and special ability.
 
-### Arrow ($50) — Available from wave 1
+### Arrow ($50) — Key 1 — Available from wave 1
 
 Your bread-and-butter tower. Fast fire rate, decent range, cheap to build and upgrade. Best for sustained single-target damage.
 
@@ -30,7 +43,19 @@ Your bread-and-butter tower. Fast fire rate, decent range, cheap to build and up
 
 **Total investment:** $155 fully upgraded. Best DPS per gold in the game.
 
-### Frost ($75) — Available from wave 1
+### Fire Arrow ($300) — Key 2 — Unlocks at Level 2
+
+Premium arrow tower that sets enemies on fire. High damage with a burn damage-over-time effect that bypasses armor entirely. Expensive but devastating against armored targets.
+
+| Level | Damage | Range | Fire Rate | Burn DPS | Burn Duration | Upgrade Cost |
+|-------|--------|-------|-----------|----------|---------------|-------------|
+| 1 | 22 | 3.5 | 3.3/s | 3/s | 3.0s | — |
+| 2 | 34 | 4.0 | 4.0/s | 5/s | 3.5s | $120 |
+| 3 | 50 | 4.5 | 5.0/s | 8/s | 4.0s | $200 |
+
+**Total investment:** $620 fully upgraded. Burn damage ignores armor — strong against tanks and bosses. If a stronger burn is applied while burning, the enemy takes the stronger one.
+
+### Frost ($75) — Key 3 — Available from wave 1
 
 Low damage but slows enemies, making them spend more time in range of your other towers. The most important support tower.
 
@@ -42,7 +67,7 @@ Low damage but slows enemies, making them spend more time in range of your other
 
 **Total investment:** $230 fully upgraded. Place before your damage towers so enemies are slowed when they enter the killzone.
 
-### Lightning ($125) — Available from wave 1
+### Lightning ($125) — Key 4 — Available from wave 1
 
 Hits one target then chains to nearby enemies. Great against groups that are spread along the path.
 
@@ -54,7 +79,7 @@ Hits one target then chains to nearby enemies. Great against groups that are spr
 
 **Total investment:** $350 fully upgraded. Each chain hit deals 70% of the previous (e.g., 15 > 10.5 > 7.4). Best placed where the path doubles back so chains can reach enemies on parallel segments.
 
-### Cannon ($100) — Unlocks at wave 2
+### Cannon ($100) — Key 5 — Unlocks at wave 2
 
 Slow-firing but deals splash damage in an area. Essential against grouped enemies. Causes screen shake on impact.
 
@@ -66,7 +91,7 @@ Slow-firing but deals splash damage in an area. Essential against grouped enemie
 
 **Total investment:** $290 fully upgraded. Splash damage falls off — 100% at center, 50% at edge.
 
-### Sniper ($150) — Unlocks at wave 5
+### Sniper ($150) — Key 6 — Unlocks at wave 5
 
 Extreme range, high single-target damage, slow fire rate. Has a chance to deal critical hits for massive damage. Shows a laser sight when targeting.
 
@@ -84,14 +109,14 @@ Extreme range, high single-target damage, slow fire rate. Has a chance to deal c
 |------|-------|----|-------|-------|---------|-----------|
 | **Grunt** | Pentagon | 30 | Medium (70) | 0% | — | 1 |
 | **Runner** | Diamond | 15 | Fast (125) | 0% | — | 1 |
-| **Tank** | Square | 120 | Slow (40) | 30% | — | 2 |
+| **Tank** | Square | 108 | Slow (40) | 27% | — | 2 |
 | **Healer** | Cross | 50 | Medium (65) | 0% | Heals nearby allies (3 HP/s) | 1 |
 | **Boss** | Hexagon | 400 | Very slow (26) | 20% | Screen shake on death | 5 |
 | **Swarm** | Triangle | 8 | Fast (105) | 0% | Comes in large numbers | 1 |
 
-HP scales exponentially each wave. By wave 20, enemies have roughly 90x the HP of wave 1.
+HP scales exponentially each wave. By wave 20, enemies have roughly 134x the HP of wave 1.
 
-Armor reduces all incoming damage by its percentage (e.g., 30% armor means the enemy takes only 70% damage from every hit).
+Armor reduces all incoming damage by its percentage (e.g., 27% armor means the enemy takes only 73% damage from every hit). **Note:** Fire Arrow burn damage bypasses armor entirely.
 
 ## Wave Modifiers
 
@@ -112,12 +137,13 @@ When a wave ends, pressing N to send the next wave early earns bonus gold. The b
 
 ## Economy
 
-- **Starting gold:** 200
+- **Starting gold:** 300
 - **Kill rewards:** Base reward + 10% bonus
-- **Wave completion bonus:** 25 + (wave number x 10) gold
+- **Wave completion bonus:** 25 + (wave number x 8) gold
 - **Interest:** 2% of your gold at end of each wave
 - **Sell refund:** 60% of total invested gold (base cost + all upgrades)
 - **Early-send bonus:** Up to 50g for sending the next wave immediately (decays 5g/s)
+- **Level-up bonus:** 25 + (level x 15) gold
 
 **Tip:** Banking gold between waves earns interest, but sending the next wave early gives up to 50g bonus. Balance these two strategies based on whether you need time to build or can handle the pressure.
 
@@ -136,7 +162,7 @@ Set frost towers to **First** so they slow the leading enemy. Set snipers to **S
 
 | Key | Action |
 |-----|--------|
-| 1-5 | Select tower (Arrow, Frost, Lightning, Cannon, Sniper) |
+| 1-6 | Select tower (Arrow, Fire Arrow, Frost, Lightning, Cannon, Sniper) |
 | Click | Place tower / Select placed tower |
 | Right-click / Esc | Cancel selection |
 | U | Upgrade selected tower |
@@ -161,6 +187,10 @@ Wave 6 is a swarm wave (20 fast enemies). Have at least one Cannon or Lightning 
 
 Bosses appear more frequently from wave 15 onward, including waves 17, 18, and 19. Healers escort tanks and bosses making them hard to bring down — set a tower to Weakest targeting to pick off healers quickly. Wave 20 has 2 bosses with tanks, healers, and a swarm finale. Use the early-send bonus aggressively to bank extra gold for upgrades.
 
+### Fire Arrow Strategy
+
+The Fire Arrow (unlocked at Level 2) costs 300g — a major investment. Its burn DoT bypasses armor, making it the best counter against tanks (27% armor) and bosses (20% armor). At Level 3, the 8 DPS burn for 4 seconds adds 32 free damage per hit on top of the 50 direct damage. Prioritize it against armored waves. Pair with Frost to maximize burn uptime while enemies are slowed.
+
 ### Tower Placement Tips
 
 - **Corners are king.** Towers at path corners hit enemies on two segments, effectively doubling their value.
@@ -173,6 +203,6 @@ Bosses appear more frequently from wave 15 onward, including waves 17, 18, and 1
 
 **Serpentine Valley:** The long winding path lets you build deep, layered defenses. Focus on 2-3 killzones at the tightest corners where the path doubles back. Lightning towers shine here because chains can jump between parallel path segments.
 
-**Split Creek:** You must cover both branches. Place frost towers at the fork to slow enemies regardless of which path they take. Build symmetric defenses, or use long-range snipers placed centrally to cover both routes. The lower HP multiplier compensates for the split coverage requirement.
+**Split Creek:** You must cover both branches. Place frost towers at the fork to slow enemies regardless of which path they take. Build symmetric defenses, or use long-range snipers placed centrally to cover both routes. The lower HP multiplier (0.60x) compensates for the split coverage requirement.
 
-**The Gauntlet:** Fewer build spots means every tower placement matters. Find the longest straight segment and stack frost + cannon + arrows there. Upgrade aggressively rather than building wide. The reduced HP multiplier balances the shorter path length.
+**The Gauntlet:** Fewer build spots means every tower placement matters. Find the longest straight segment and stack frost + cannon + arrows there. Upgrade aggressively rather than building wide. The reduced HP multiplier (0.65x) balances the shorter path length.
