@@ -1,4 +1,4 @@
-import { CANVAS_W, CANVAS_H, CELL, COLS, ROWS, TOWER_TYPES, TARGET_MODES, LEVEL_HP_MULTIPLIER, WAVES_PER_LEVEL, getWaveHPScale } from './constants.js';
+import { CANVAS_W, CANVAS_H, CELL, COLS, ROWS, TOWER_TYPES, TARGET_MODES, LEVEL_HP_MULTIPLIER, TOTAL_WAVES, getWaveHPScale } from './constants.js';
 
 export class Renderer {
     constructor(canvases, game) {
@@ -1503,7 +1503,7 @@ export class Renderer {
         const level = this.game.worldLevel;
         const levelHpMul = Math.pow(LEVEL_HP_MULTIPLIER, Math.max(0, level - 1));
         const wave = this.game.waves.currentWave;
-        const totalWaves = WAVES_PER_LEVEL;
+        const totalWaves = TOTAL_WAVES;
         const waveHpScale = wave > 0 ? getWaveHPScale(wave) : 0;
         const finalMul = worldHpMul * levelHpMul * waveHpScale;
 

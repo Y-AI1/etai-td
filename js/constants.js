@@ -371,8 +371,7 @@ export const WAVES = [
 ];
 
 export const TOTAL_WAVES = 20;
-export const WAVES_PER_LEVEL = 20;
-export const LEVEL_HP_MULTIPLIER = 1.4;
+export const LEVEL_HP_MULTIPLIER = 1.2;
 
 // ── Targeting Modes ────────────────────────────────────────
 export const TARGET_MODES = ['First', 'Closest', 'Strongest', 'Weakest'];

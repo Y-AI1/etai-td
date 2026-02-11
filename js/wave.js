@@ -1,4 +1,4 @@
-import { WAVES, TOTAL_WAVES, WAVES_PER_LEVEL, LEVEL_HP_MULTIPLIER, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY } from './constants.js';
+import { WAVES, TOTAL_WAVES, LEVEL_HP_MULTIPLIER, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY } from './constants.js';
 
 export class WaveManager {
     constructor(game) {
@@ -155,7 +155,7 @@ export class WaveManager {
         this.game.particles.spawnFloatingText(CANVAS_W / 2, CANVAS_H / 3, `Wave ${this.currentWave} Complete! +${bonus + interest}g`, '#ffd700');
 
         // Level up after completing all waves
-        if (this.currentWave >= WAVES_PER_LEVEL) {
+        if (this.currentWave >= TOTAL_WAVES) {
             this.game.levelUp();
             return;
         }
