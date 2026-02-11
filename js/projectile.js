@@ -1,4 +1,4 @@
-import { CELL, TOWER_TYPES } from './constants.js';
+import { CELL, CANVAS_W, CANVAS_H, TOWER_TYPES } from './constants.js';
 import { distance, angle } from './utils.js';
 
 export class Projectile {
@@ -107,6 +107,7 @@ export class Projectile {
                 splashRad *= 1.3;
                 game.particles.spawnFloatingText(this.x, this.y - 15, 'CRIT!', '#ff4444');
                 game.particles.spawnSpark(this.x, this.y, '#ff4444', 6);
+                game.postfx?.aberration(0.6, 0.15);
             }
 
             this.doSplash(splashDmg, game, splashRad);
@@ -116,6 +117,8 @@ export class Projectile {
             const explosionColor = this.missile ? '#aabb44' : (this.isHeavy ? '#ff3300' : '#ff6600');
             game.particles.spawnExplosion(this.x, this.y, explosionColor);
             game.triggerShake(this.isHeavy ? 5 : (this.missile ? 4 : 3), this.isHeavy ? 0.25 : (this.missile ? 0.2 : 0.15));
+            // PostFX shockwave on explosions
+            game.postfx?.shockwave(this.x / CANVAS_W, this.y / CANVAS_H, this.isHeavy ? 0.4 : (this.missile ? 0.35 : 0.25));
 
             // Heavy round: armor shred + scorch zone
             if (this.isHeavy && this.armorShred > 0) {
@@ -152,6 +155,7 @@ export class Projectile {
                 if (isCrit) {
                     game.particles.spawnFloatingText(this.x, this.y - 15, `CRIT!`, '#ff4444');
                     game.particles.spawnSpark(this.x, this.y, '#ff4444', 5);
+                    game.postfx?.aberration(0.5, 0.15);
                 }
             }
         }

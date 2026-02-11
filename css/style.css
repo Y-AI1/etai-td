@@ -314,8 +314,9 @@ body {
     height: 100%;
 }
 
-#terrain-canvas { z-index: 1; }
-#game-canvas { z-index: 2; }
+#terrain-canvas { z-index: 0; }
+#game-canvas { z-index: 1; }
+#fx-canvas { z-index: 2; pointer-events: none; }
 #ui-canvas { z-index: 3; }
 
 /* ── Bottom Panel ──────────────────────────────────────── */

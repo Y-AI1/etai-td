@@ -20,6 +20,8 @@ export class Renderer {
         for (const tower of this.game.towers.towers) {
             this.drawTowerBase(this.terrainCtx, tower);
         }
+        // Flag PostFX to re-upload terrain texture
+        if (this.game.postfx) this.game.postfx.setTerrainDirty();
     }
 
     drawTowerBase(ctx, tower) {
@@ -185,8 +187,8 @@ export class Renderer {
             ctx.restore();
         }
 
-        // Screen flash overlay
-        if (this.game.screenFlash > 0) {
+        // Screen flash overlay (Canvas 2D fallback — skipped when PostFX handles it)
+        if (this.game.screenFlash > 0 && (!this.game.postfx || !this.game.postfx.enabled)) {
             ctx.save();
             ctx.globalAlpha = Math.min(this.game.screenFlash, 1);
             ctx.fillStyle = '#fff';

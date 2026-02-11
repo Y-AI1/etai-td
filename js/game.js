@@ -11,6 +11,7 @@ import { InputHandler } from './input.js';
 import { UI } from './ui.js';
 import { Audio } from './audio.js';
 import { WaveDebugger } from './debug.js';
+import { PostFX } from './postfx.js';
 
 const FIXED_DT = 1 / 60; // 60 Hz physics
 
@@ -49,6 +50,7 @@ export class Game {
         this.ui = new UI(this);
         this.audio = new Audio();
         this.debug = new WaveDebugger();
+        this.postfx = new PostFX(canvases.fx, canvases.terrain, canvases.game);
 
         // Initial terrain render
         this.renderer.drawTerrain();
@@ -58,6 +60,16 @@ export class Game {
         this.selectedMapId = mapId;
         this.map = new GameMap(mapId);
         this.renderer.drawTerrain();
+        // Per-map color grading
+        const tints = {
+            serpentine: [0.95, 1.0, 0.9],
+            splitcreek: [0.9, 0.95, 1.05],
+            gauntlet: [1.05, 0.95, 0.9],
+        };
+        if (this.postfx.enabled) {
+            const t = tints[mapId] || [1, 1, 1];
+            this.postfx.setMapTint(t[0], t[1], t[2]);
+        }
     }
 
     start() {
@@ -167,6 +179,7 @@ export class Game {
         }
 
         this.renderer.drawFrame(this.accumulator / FIXED_DT);
+        if (this.postfx.enabled) this.postfx.render();
         if (this.state === STATE.PLAYING) this.ui.update();
         requestAnimationFrame(t => this.tick(t));
     }
@@ -190,7 +203,11 @@ export class Game {
         if (count > 0) {
             this.triggerShake(12, 0.6);
             this.audio.playExplosion();
-            this.screenFlash = 0.3;
+            if (this.postfx.enabled) {
+                this.postfx.flash(0.3, 0.3);
+            } else {
+                this.screenFlash = 0.3;
+            }
         }
     }
 
@@ -228,8 +245,11 @@ export class Game {
     }
 
     update(dt) {
-        // Update screen flash
+        // Update screen flash (Canvas 2D fallback)
         if (this.screenFlash > 0) this.screenFlash -= dt;
+
+        // Update post-processing timers
+        this.postfx.update(dt);
 
         // Update screen shake
         if (this.shakeTimer > 0) {

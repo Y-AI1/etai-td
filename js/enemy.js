@@ -1,4 +1,4 @@
-import { ENEMY_TYPES, CELL, WAVE_MODIFIERS } from './constants.js';
+import { ENEMY_TYPES, CELL, CANVAS_W, CANVAS_H, WAVE_MODIFIERS } from './constants.js';
 import { distance } from './utils.js';
 
 let nextEnemyId = 0;
@@ -290,9 +290,11 @@ export class EnemyManager {
                     this.game.particles.spawnExplosion(e.x, e.y, e.color);
                 }
 
-                // Boss death screen shake
+                // Boss death screen shake + PostFX
                 if (e.type === 'boss') {
                     this.game.triggerShake(8, 0.4);
+                    this.game.postfx?.flash(0.15, 0.2);
+                    this.game.postfx?.shockwave(e.x / CANVAS_W, e.y / CANVAS_H, 0.5);
                 }
                 continue;
             }
