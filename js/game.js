@@ -1,4 +1,4 @@
-import { STATE, CANVAS_W, CANVAS_H } from './constants.js';
+import { STATE, CANVAS_W, CANVAS_H, HERO_STATS } from './constants.js';
 import { GameMap } from './map.js';
 import { TowerManager } from './tower.js';
 import { EnemyManager } from './enemy.js';
@@ -12,6 +12,7 @@ import { UI } from './ui.js';
 import { Audio } from './audio.js';
 import { WaveDebugger } from './debug.js';
 import { PostFX } from './postfx.js';
+import { Hero } from './hero.js';
 
 const FIXED_DT = 1 / 60; // 60 Hz physics
 
@@ -44,6 +45,7 @@ export class Game {
         this.towers = new TowerManager(this);
         this.projectiles = new ProjectileManager(this);
         this.particles = new ParticleSystem();
+        this.hero = new Hero(this);
         this.waves = new WaveManager(this);
         this.renderer = new Renderer(canvases, this);
         this.input = new InputHandler(canvases.ui, this);
@@ -81,6 +83,8 @@ export class Game {
         // Recreate map with the correct layout for this world level
         this.map = new GameMap(this.selectedMapId, (this.worldLevel - 1) % 3);
         this.renderer.drawTerrain();
+        if (this.worldLevel >= HERO_STATS.unlockLevel) this.hero.init(this.map);
+        else this.hero.reset();
         this.state = STATE.PLAYING;
         this.ui.setupTowerPanel();
         this.ui.hideAllScreens();
@@ -95,6 +99,7 @@ export class Game {
     togglePause() {
         if (this.state === STATE.PLAYING) {
             this.state = STATE.PAUSED;
+            this.hero.clearMovement();
         } else if (this.state === STATE.PAUSED) {
             this.state = STATE.PLAYING;
         }
@@ -133,6 +138,8 @@ export class Game {
         // Recreate map with the new layout for this world level
         this.map = new GameMap(this.selectedMapId, (this.worldLevel - 1) % 3);
         this.renderer.drawTerrain();
+        if (this.worldLevel >= HERO_STATS.unlockLevel) this.hero.init(this.map);
+        else this.hero.reset();
         this.state = STATE.PLAYING;
         this.ui.setupTowerPanel();
         this.ui.hideAllScreens();
@@ -159,6 +166,7 @@ export class Game {
         this.scorchZones = [];
         this.waves.reset();
         this.input.reset();
+        this.hero.reset();
         this.renderer.drawTerrain();
         this.ui.setupTowerPanel();
         this.ui.showScreen('menu');
@@ -240,12 +248,15 @@ export class Game {
         if (this.selectedMapId) {
             this.map = new GameMap(this.selectedMapId, (this.worldLevel - 1) % 3);
             this.renderer.drawTerrain();
+            if (this.worldLevel >= HERO_STATS.unlockLevel) this.hero.init(this.map);
+            else this.hero.reset();
             this.state = STATE.PLAYING;
             this.ui.setupTowerPanel();
             this.waves.startNextWave();
             this.ui.update();
         } else {
             this.state = STATE.MENU;
+            this.hero.reset();
             this.ui.setupTowerPanel();
             this.ui.showScreen('menu');
             this.ui.update();
@@ -277,6 +288,7 @@ export class Game {
 
         this.waves.update(dt);
         this.enemies.update(dt);
+        this.hero.update(dt);
         this.towers.update(dt);
         this.projectiles.update(dt);
         this.particles.update(dt);

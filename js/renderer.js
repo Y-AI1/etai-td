@@ -1,4 +1,4 @@
-import { CANVAS_W, CANVAS_H, CELL, COLS, ROWS, TOWER_TYPES, TARGET_MODES, LEVEL_HP_MULTIPLIER, TOTAL_WAVES, getWaveHPScale, getTotalWaves } from './constants.js';
+import { CANVAS_W, CANVAS_H, CELL, COLS, ROWS, TOWER_TYPES, TARGET_MODES, LEVEL_HP_MULTIPLIER, TOTAL_WAVES, HERO_STATS, getWaveHPScale, getTotalWaves } from './constants.js';
 
 export class Renderer {
     constructor(canvases, game) {
@@ -176,6 +176,9 @@ export class Renderer {
         // Draw tower turrets (rotatable part)
         this.drawTowerTurrets(ctx);
 
+        // Draw hero
+        this.drawHero(ctx);
+
         // Draw projectiles
         this.drawProjectiles(ctx);
 
@@ -198,6 +201,187 @@ export class Renderer {
 
         // Draw UI overlay
         this.drawUIOverlay();
+    }
+
+    // ── Hero Drawing ──────────────────────────────────────────
+    getHeroState(hero) {
+        const stunReady = hero.stunCooldown <= 0;
+        const magnetReady = hero.magnetCooldown <= 0;
+        if (stunReady && magnetReady) return 'both';
+        if (magnetReady)              return 'magnet';
+        if (stunReady)                return 'stun';
+        return 'cooldown';
+    }
+
+    // State-driven colors: body, glow ring, outline
+    getHeroColors(state) {
+        switch (state) {
+            case 'both':     return { body: '#00e5ff', glow: '#00e5ff', outline: '#005f6f' }; // cyan — full power
+            case 'magnet':   return { body: '#ffd700', glow: '#ffd700', outline: '#7a6500' }; // gold — magnet ready
+            case 'stun':     return { body: '#ffffff', glow: '#ffffff', outline: '#888888' }; // white — stun ready
+            case 'cooldown': return { body: '#556677', glow: '#445566', outline: '#334455' }; // gray — recharging
+        }
+    }
+
+    drawHero(ctx) {
+        const hero = this.game.hero;
+        if (!hero.active) return;
+
+        const { x, y } = hero;
+        const r = HERO_STATS.radius;
+
+        // Dead state — ghost at spawn + respawn countdown
+        if (!hero.alive) {
+            ctx.save();
+            ctx.globalAlpha = 0.3 + Math.sin(hero.deathAnimTimer * 4) * 0.1;
+            ctx.strokeStyle = '#556677';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(hero.spawnX, hero.spawnY, r + 4, 0, Math.PI * 2);
+            ctx.stroke();
+            if (hero.respawnTimer > 0) {
+                ctx.globalAlpha = 0.8;
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(Math.ceil(hero.respawnTimer) + 's', hero.spawnX, hero.spawnY + 5);
+            }
+            ctx.restore();
+            return;
+        }
+
+        const state = this.getHeroState(hero);
+        const colors = this.getHeroColors(state);
+        const isFlashing = hero.damageFlashTimer > 0 || hero.stunFlashTimer > 0;
+
+        ctx.save();
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(x, y + r * 0.7, r * 0.8, r * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Magnet aura (active effect, independent of state color)
+        if (hero.magnetActive) {
+            const pulse = 0.8 + Math.sin(Date.now() * 0.005) * 0.2;
+            const magnetPx = HERO_STATS.magnetRadius * CELL;
+            ctx.strokeStyle = `rgba(255, 215, 0, ${0.3 * pulse})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, magnetPx * pulse, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = `rgba(255, 215, 0, ${0.15 * pulse})`;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(x, y, magnetPx * pulse * 0.7, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Glow ring — color matches state
+        ctx.strokeStyle = colors.glow;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = state === 'cooldown' ? 0.2 : (0.4 + Math.sin(Date.now() * 0.003) * 0.15);
+        ctx.beginPath();
+        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Body — chevron/arrow shape rotated to turretAngle
+        ctx.translate(x, y);
+        ctx.rotate(hero.turretAngle);
+
+        ctx.fillStyle = isFlashing ? '#ff4444' : colors.body;
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(-r * 0.7, -r * 0.65);
+        ctx.lineTo(-r * 0.3, 0);
+        ctx.lineTo(-r * 0.7, r * 0.65);
+        ctx.closePath();
+        ctx.fill();
+
+        // Outline
+        ctx.strokeStyle = isFlashing ? '#fff' : colors.outline;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+
+        // HP bar (only when not full)
+        if (hero.hp < hero.maxHP) {
+            const barW = 28;
+            const barH = 4;
+            const barX = x - barW / 2;
+            const barY = y - r - 10;
+            const hpFrac = hero.hp / hero.maxHP;
+
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+            ctx.fillStyle = hpFrac > 0.5 ? '#00e5ff' : hpFrac > 0.25 ? '#ffaa00' : '#ff4444';
+            ctx.fillRect(barX, barY, barW * hpFrac, barH);
+        }
+
+        // Ability cooldown indicators below hero
+        this.drawHeroCooldowns(ctx, hero);
+    }
+
+    drawHeroCooldowns(ctx, hero) {
+        const x = hero.x;
+        const y = hero.y + HERO_STATS.radius + 12;
+        const iconR = 7;
+        const gap = 20;
+
+        // Q — Stun (left)
+        this.drawCooldownArc(ctx, x - gap / 2, y, iconR, hero.stunCooldown, HERO_STATS.stunCooldown, '#ffffff', 'Q');
+
+        // E — Magnet (right)
+        const magnetColor = hero.magnetActive ? '#ffd700' : '#ffd700';
+        this.drawCooldownArc(ctx, x + gap / 2, y, iconR, hero.magnetCooldown, HERO_STATS.magnetCooldown, magnetColor, 'E');
+    }
+
+    drawCooldownArc(ctx, cx, cy, r, cooldown, maxCooldown, color, label) {
+        ctx.save();
+
+        // Background circle
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (cooldown > 0) {
+            // Cooldown sweep (how much is remaining)
+            const frac = cooldown / maxCooldown;
+            ctx.fillStyle = 'rgba(100,100,100,0.6)';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            // Ready — filled with color
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+
+        // Border
+        ctx.strokeStyle = cooldown > 0 ? '#666' : color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = cooldown > 0 ? '#888' : '#fff';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, cx, cy);
+
+        ctx.restore();
     }
 
     // ── Enemy Shape Helpers ──────────────────────────────────

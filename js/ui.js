@@ -1,4 +1,4 @@
-import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, TOTAL_WAVES, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, getTotalWaves } from './constants.js';
+import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, TOTAL_WAVES, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, HERO_STATS, getTotalWaves } from './constants.js';
 import { Economy } from './economy.js';
 
 export class UI {
@@ -13,6 +13,7 @@ export class UI {
         this.elAvatarCanvas = document.getElementById('avatar-canvas');
         this.elTowerPanel = document.getElementById('tower-panel');
         this.elTowerInfo = document.getElementById('tower-info');
+        this.elHeroInfo = document.getElementById('hero-info');
         this.elSpeedBtn = document.getElementById('speed-btn');
         this.elPauseBtn = document.getElementById('pause-btn');
         this.elMuteBtn = document.getElementById('mute-btn');
@@ -502,6 +503,25 @@ export class UI {
             if (group) {
                 group.style.borderColor = themeColor;
                 group.style.boxShadow = `0 0 14px ${themeColor}66, inset 0 0 8px ${themeColor}1a`;
+            }
+        }
+
+        // Hero badge
+        if (this.elHeroInfo) {
+            const hero = game.hero;
+            if (hero.active) {
+                this.elHeroInfo.style.display = 'inline-flex';
+                if (!hero.alive) {
+                    this.elHeroInfo.textContent = `Respawn ${Math.ceil(hero.respawnTimer)}s`;
+                    this.elHeroInfo.style.borderColor = 'rgba(255,68,68,0.4)';
+                    this.elHeroInfo.style.color = '#ff4444';
+                } else {
+                    this.elHeroInfo.textContent = `Hero ${Math.ceil(hero.hp)}/${HERO_STATS.maxHP}`;
+                    this.elHeroInfo.style.borderColor = 'rgba(0,228,255,0.4)';
+                    this.elHeroInfo.style.color = '#00e5ff';
+                }
+            } else {
+                this.elHeroInfo.style.display = 'none';
             }
         }
 

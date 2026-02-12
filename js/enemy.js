@@ -280,13 +280,16 @@ export class EnemyManager {
                 e.deathTimer = 0;
                 this.game.debug.onEnemyKilled(e);
 
-                // Calculate gold reward with gold rush multiplier
+                // Calculate gold reward with gold rush + hero magnet multipliers
                 const waveTag = this.game.waves.waveTag;
-                const goldMulti = waveTag === 'goldrush' ? GOLD_RUSH_MULTIPLIER : 1;
+                let goldMulti = waveTag === 'goldrush' ? GOLD_RUSH_MULTIPLIER : 1;
+                const heroMulti = this.game.hero?.getGoldMultiplier(e.x, e.y) || 1;
+                goldMulti *= heroMulti;
                 const goldReward = Math.round(e.reward * 1.10 * goldMulti);
                 this.game.economy.addGold(goldReward);
                 this.game.economy.addScore(e.reward);
-                this.game.particles.spawnFloatingText(e.x, e.y - 10, `+${goldReward}`, goldMulti > 1 ? '#ffaa00' : '#ffd700');
+                const goldColor = heroMulti > 1 ? '#00e5ff' : (goldMulti > 1 ? '#ffaa00' : '#ffd700');
+                this.game.particles.spawnFloatingText(e.x, e.y - 10, `+${goldReward}`, goldColor);
 
                 // Bounty boss bonus
                 if (e.type === 'boss' && waveTag === 'midboss') {

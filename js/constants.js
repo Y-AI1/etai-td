@@ -346,6 +346,26 @@ export const TOWER_TYPES = {
     },
 };
 
+// ── Hero Definitions ──────────────────────────────────────
+export const HERO_STATS = {
+    unlockLevel: 3,       // hero appears from level 3 onwards
+    maxHP: 200,
+    speed: 150,           // px/s
+    radius: 14,
+    color: '#00e5ff',     // cyan — distinct from all towers/enemies
+    // Auto-attack
+    damage: 15,  range: 3.5,  fireRate: 0.5,  projSpeed: 350,
+    // Contact damage (DPS tick every 0.5s)
+    contactTick: 0.5,  contactBase: 10,
+    contactMultipliers: { grunt: 1, runner: 0.8, tank: 2, healer: 0.6, boss: 3, swarm: 0.5 },
+    // Respawn
+    respawnDelay: 5.0,
+    // Q: AoE Stun
+    stunRadius: 3.0,  stunDuration: 1.5,  stunCooldown: 15.0,
+    // E: Gold Magnet
+    magnetRadius: 4.0,  magnetDuration: 8.0,  magnetMultiplier: 2,  magnetCooldown: 20.0,
+};
+
 // ── Enemy Definitions ──────────────────────────────────────
 export const ENEMY_TYPES = {
     grunt: {

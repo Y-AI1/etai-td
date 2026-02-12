@@ -276,6 +276,7 @@ export class Projectile {
             firearrow: '#ff4500',
             bicannon: '#ff8c00',
             missilesniper: '#aabb44',
+            hero: '#00e5ff',
         };
         return colors[this.towerType] || '#fff';
     }

@@ -124,6 +124,9 @@ export class Audio {
                 this.playTone('triangle', 1000, 300, 0.15, 0.08);
                 this.playNoise(0.2, 0.06);
                 break;
+            case 'hero':
+                this.playTone('sine', 600, 900, 0.08, 0.12);
+                break;
             case 'bicannon':
                 if (isHeavy) {
                     // Heavy round: deep boom + armor crack
@@ -280,5 +283,26 @@ export class Audio {
             osc.start(now + i * 0.1);
             osc.stop(now + i * 0.1 + 0.35);
         });
+    }
+
+    playHeroDeath() {
+        this.playTone('sawtooth', 400, 80, 0.3, 0.2);
+        this.playTone('square', 200, 50, 0.25, 0.15);
+        this.playNoise(0.2, 0.1);
+    }
+
+    playHeroRespawn() {
+        this.playTone('sine', 300, 800, 0.2, 0.15);
+        this.playTone('triangle', 500, 1000, 0.15, 0.1);
+    }
+
+    playHeroStun() {
+        this.playTone('square', 1500, 300, 0.12, 0.15);
+        this.playNoise(0.1, 0.08);
+    }
+
+    playHeroMagnet() {
+        this.playTone('sine', 400, 600, 0.15, 0.12);
+        this.playTone('triangle', 800, 1200, 0.1, 0.08);
     }
 }

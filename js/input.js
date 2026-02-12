@@ -14,6 +14,14 @@ function buildTowerKeys(game) {
     return keys;
 }
 
+// Map arrow keys to the same direction names as WASD
+const ARROW_TO_DIR = {
+    arrowup: 'up', arrowdown: 'down', arrowleft: 'left', arrowright: 'right',
+};
+const WASD_TO_DIR = {
+    w: 'up', s: 'down', a: 'left', d: 'right',
+};
+
 export class InputHandler {
     constructor(canvas, game) {
         this.canvas = canvas;
@@ -22,6 +30,8 @@ export class InputHandler {
         this.hoverGy = -1;
         this.selectedTowerType = null; // tower type to place
         this.selectedTower = null;     // placed tower that's selected
+        // Tracks which directions are held (not raw keys)
+        this.dirsHeld = { up: false, down: false, left: false, right: false };
 
         this.bindEvents();
     }
@@ -35,6 +45,7 @@ export class InputHandler {
         });
 
         document.addEventListener('keydown', e => this.onKeyDown(e));
+        document.addEventListener('keyup', e => this.onKeyUp(e));
     }
 
     getCanvasPos(e) {
@@ -96,8 +107,102 @@ export class InputHandler {
         }
     }
 
+    onKeyUp(e) {
+        const keyLower = e.key.toLowerCase();
+
+        // Arrow key release
+        const arrowDir = ARROW_TO_DIR[keyLower];
+        if (arrowDir) {
+            this.dirsHeld[arrowDir] = false;
+            this.applyHeroMovement();
+            return;
+        }
+
+        // WASD release
+        const wasdDir = WASD_TO_DIR[keyLower];
+        if (wasdDir) {
+            this.dirsHeld[wasdDir] = false;
+            this.applyHeroMovement();
+        }
+    }
+
+    applyHeroMovement() {
+        const hero = this.game.hero;
+        hero.moveUp = this.dirsHeld.up;
+        hero.moveDown = this.dirsHeld.down;
+        hero.moveLeft = this.dirsHeld.left;
+        hero.moveRight = this.dirsHeld.right;
+    }
+
     onKeyDown(e) {
         const key = e.key;
+        const keyLower = key.toLowerCase();
+
+        // Arrow keys — always move hero during gameplay
+        const arrowDir = ARROW_TO_DIR[keyLower];
+        if (arrowDir) {
+            if (this.game.state === STATE.PLAYING) {
+                e.preventDefault();
+                this.dirsHeld[arrowDir] = true;
+                this.applyHeroMovement();
+            }
+            return;
+        }
+
+        // WASD hero movement + Q/E abilities (only during gameplay)
+        if (this.game.state === STATE.PLAYING) {
+            // W: hero move (unless admin mode wants it for wave-set)
+            if (keyLower === 'w') {
+                if (this.game.adminMode) {
+                    const w = prompt(`Set wave (current: ${this.game.waves.currentWave}):`);
+                    const wn = parseInt(w);
+                    if (wn > 0) this.game.adminSetWave(wn);
+                } else {
+                    this.dirsHeld.up = true;
+                    this.applyHeroMovement();
+                }
+                return;
+            }
+            // A: hero move (no conflicts)
+            if (keyLower === 'a') {
+                this.dirsHeld.left = true;
+                this.applyHeroMovement();
+                return;
+            }
+            // D: hero move (unless admin mode wants CSV download)
+            if (keyLower === 'd') {
+                if (this.game.adminMode) {
+                    this.game.debug.downloadCSV();
+                } else {
+                    this.dirsHeld.right = true;
+                    this.applyHeroMovement();
+                }
+                return;
+            }
+            // S: sell tower if one selected, otherwise hero move
+            if (keyLower === 's') {
+                if (this.selectedTower) {
+                    this.game.towers.sell(this.selectedTower);
+                    this.selectedTower = null;
+                    this.game.ui.hideTowerInfo();
+                    this.game.ui.update();
+                } else {
+                    this.dirsHeld.down = true;
+                    this.applyHeroMovement();
+                }
+                return;
+            }
+            // Q: AoE Stun
+            if (keyLower === 'q') {
+                this.game.hero.activateStun();
+                return;
+            }
+            // E: Gold Magnet
+            if (keyLower === 'e') {
+                this.game.hero.activateMagnet();
+                return;
+            }
+        }
 
         // Tower shortcuts (dynamic based on visible towers)
         const towerKeys = buildTowerKeys(this.game);
@@ -146,27 +251,11 @@ export class InputHandler {
                     }
                 }
                 break;
-            case 's':
-            case 'S':
-                if (this.selectedTower) {
-                    this.game.towers.sell(this.selectedTower);
-                    this.selectedTower = null;
-                    this.game.ui.hideTowerInfo();
-                    this.game.ui.update();
-                }
-                break;
             case 't':
             case 'T':
                 if (this.selectedTower) {
                     this.selectedTower.cycleTargetMode();
                     this.game.ui.showTowerInfo(this.selectedTower);
-                }
-                break;
-            case 'e':
-            case 'E':
-                // Hidden cheat
-                if (this.game.state === STATE.PLAYING) {
-                    this.game.blowThemAll();
                 }
                 break;
             case 'c':
@@ -177,24 +266,10 @@ export class InputHandler {
                     }
                 }
                 break;
-            case 'd':
-            case 'D':
-                if (this.game.adminMode) {
-                    this.game.debug.downloadCSV();
-                }
-                break;
             case 'k':
             case 'K':
                 if (this.game.adminMode && this.game.state === STATE.PLAYING) {
                     this.game.blowThemAll();
-                }
-                break;
-            case 'w':
-            case 'W':
-                if (this.game.adminMode && this.game.state === STATE.PLAYING) {
-                    const w = prompt(`Set wave (current: ${this.game.waves.currentWave}):`);
-                    const wn = parseInt(w);
-                    if (wn > 0) this.game.adminSetWave(wn);
                 }
                 break;
             case 'l':
@@ -246,6 +321,8 @@ export class InputHandler {
         this.selectedTower = null;
         this.hoverGx = -1;
         this.hoverGy = -1;
+        this.dirsHeld = { up: false, down: false, left: false, right: false };
+        this.game.hero.clearMovement();
         this.game.ui.hideTowerInfo();
     }
 }
