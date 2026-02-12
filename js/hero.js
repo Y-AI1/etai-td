@@ -21,6 +21,7 @@ export class Hero {
         this.alive = false;
         this.hp = 0;
         this.maxHP = HERO_STATS.maxHP;
+        this.levelScale = 1;
         this.turretAngle = 0;
 
         // Auto-attack
@@ -61,10 +62,14 @@ export class Hero {
         this.x = this.spawnX;
         this.y = this.spawnY;
 
+        // Scale hero stats with level (10% per level above 3)
+        const levelsAbove = Math.max(0, this.game.worldLevel - HERO_STATS.unlockLevel);
+        this.levelScale = 1 + levelsAbove * 0.10;
+
         this.alive = true;
         this.active = true;
-        this.hp = HERO_STATS.maxHP;
-        this.maxHP = HERO_STATS.maxHP;
+        this.hp = Math.round(HERO_STATS.maxHP * this.levelScale);
+        this.maxHP = this.hp;
         this.turretAngle = Math.PI; // face left (towards enemies)
 
         this.attackCooldown = 0;
@@ -201,7 +206,7 @@ export class Hero {
             x: this.x,
             y: this.y,
             type: 'hero',
-            damage: HERO_STATS.damage,
+            damage: Math.round(HERO_STATS.damage * this.levelScale),
             projSpeed: HERO_STATS.projSpeed,
             splashRadius: 0,
             slowFactor: 0,
@@ -265,7 +270,7 @@ export class Hero {
 
     respawn() {
         this.alive = true;
-        this.hp = HERO_STATS.maxHP;
+        this.hp = this.maxHP;
         this.x = this.spawnX;
         this.y = this.spawnY;
         this.attackCooldown = 0;

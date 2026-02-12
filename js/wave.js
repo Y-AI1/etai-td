@@ -48,6 +48,8 @@ export class WaveManager {
             this.game.particles.spawnBigFloatingText(CANVAS_W / 2, CANVAS_H / 3, 'GOLD RUSH!', '#ffd700');
         } else if (this.waveTag === 'midboss') {
             this.game.particles.spawnBigFloatingText(CANVAS_W / 2, CANVAS_H / 3, 'BOUNTY BOSS!', '#2ecc71');
+        } else if (this.waveTag === 'armorbreak') {
+            this.game.particles.spawnBigFloatingText(CANVAS_W / 2, CANVAS_H / 3, 'ARMOR BREAK!', '#ff8800');
         }
 
         // Roll for wave modifier

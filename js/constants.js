@@ -615,6 +615,8 @@ export const DUAL_SPAWN_LEVEL = 6;
 export const GOLD_RUSH_MULTIPLIER = 2;
 export const MIDBOSS_BOUNTY = 150;
 
+export const ARMOR_BREAK_FACTOR = 0.5; // enemies lose 50% armor on armorbreak waves
+
 export const LEVEL_WAVES = {
     3: {
         waves: [
@@ -650,6 +652,31 @@ export const LEVEL_WAVES = {
             [{ type: 'boss', count: 2, interval: 4.0, delay: 0 }, { type: 'tank', count: 3, interval: 0.85, delay: 1.5 }, { type: 'healer', count: 2, interval: 1.3, delay: 2.5 }, { type: 'swarm', count: 15, interval: 0.15, delay: 3 }],
         ],
         tags: { 7: 'goldrush', 8: 'midboss' },
+    },
+    7: {
+        waves: [
+            // Wave 1: Fast opener — runners + grunts
+            [{ type: 'runner', count: 12, interval: 0.25, delay: 0 }, { type: 'grunt', count: 8, interval: 0.5, delay: 1.0 }],
+            // Wave 2: First boss + tank escort
+            [{ type: 'boss', count: 1, interval: 0, delay: 0 }, { type: 'tank', count: 3, interval: 1.0, delay: 1.0 }, { type: 'healer', count: 1, interval: 0, delay: 2.0 }],
+            // Wave 3: Swarm flood + healers
+            [{ type: 'swarm', count: 30, interval: 0.13, delay: 0 }, { type: 'healer', count: 3, interval: 1.3, delay: 1.5 }],
+            // Wave 4: Double boss + runners
+            [{ type: 'boss', count: 2, interval: 5.0, delay: 0 }, { type: 'runner', count: 10, interval: 0.3, delay: 1.5 }],
+            // Wave 5: ARMOR BREAK — tank army with halved armor
+            [{ type: 'tank', count: 8, interval: 0.7, delay: 0 }, { type: 'tank', count: 4, interval: 0.7, delay: 2.0 }, { type: 'healer', count: 3, interval: 1.0, delay: 1.0 }],
+            // Wave 6: Boss + swarm chaos
+            [{ type: 'boss', count: 1, interval: 0, delay: 0 }, { type: 'swarm', count: 25, interval: 0.15, delay: 0.5 }, { type: 'tank', count: 3, interval: 1.0, delay: 2.0 }],
+            // Wave 7: Triple boss
+            [{ type: 'boss', count: 3, interval: 4.0, delay: 0 }, { type: 'healer', count: 4, interval: 1.0, delay: 1.5 }],
+            // Wave 8: Everything mixed — no breather
+            [{ type: 'grunt', count: 10, interval: 0.35, delay: 0 }, { type: 'runner', count: 8, interval: 0.25, delay: 0.5 }, { type: 'tank', count: 5, interval: 0.7, delay: 1.0 }, { type: 'healer', count: 3, interval: 1.3, delay: 2.0 }],
+            // Wave 9: Quad boss + healers
+            [{ type: 'boss', count: 4, interval: 3.5, delay: 0 }, { type: 'healer', count: 4, interval: 1.3, delay: 1.0 }, { type: 'tank', count: 3, interval: 1.0, delay: 2.5 }],
+            // Wave 10: FINALE — 5 bosses staggered + full escort
+            [{ type: 'boss', count: 5, interval: 3.0, delay: 0 }, { type: 'tank', count: 4, interval: 0.7, delay: 1.0 }, { type: 'healer', count: 3, interval: 1.0, delay: 1.5 }, { type: 'swarm', count: 20, interval: 0.15, delay: 2.0 }],
+        ],
+        tags: { 5: 'armorbreak' },
     },
 };
 

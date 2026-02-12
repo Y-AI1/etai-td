@@ -1,4 +1,4 @@
-import { ENEMY_TYPES, CELL, CANVAS_W, CANVAS_H, WAVE_MODIFIERS, GOLD_RUSH_MULTIPLIER, MIDBOSS_BOUNTY, KILL_GOLD_BONUS } from './constants.js';
+import { ENEMY_TYPES, CELL, CANVAS_W, CANVAS_H, WAVE_MODIFIERS, GOLD_RUSH_MULTIPLIER, MIDBOSS_BOUNTY, KILL_GOLD_BONUS, ARMOR_BREAK_FACTOR } from './constants.js';
 import { distance } from './utils.js';
 
 let nextEnemyId = 0;
@@ -57,6 +57,9 @@ export class Enemy {
 
         // Wave modifier tag (for visual indicator)
         this.waveModifier = null;
+
+        // Boss enrage (when last enemy alive)
+        this.enraged = false;
 
         // Visual
         this.angle = 0;
@@ -248,12 +251,30 @@ export class EnemyManager {
     spawn(typeName, hpScale, modifier, useSecondary) {
         const enemy = new Enemy(typeName, hpScale, this.game.map.getEnemyPath(useSecondary));
         if (modifier) enemy.applyModifier(modifier);
+        // Armor break wave tag — halve armor
+        if (this.game.waves.waveTag === 'armorbreak') {
+            enemy.armor *= ARMOR_BREAK_FACTOR;
+            enemy.baseArmor *= ARMOR_BREAK_FACTOR;
+        }
         this.enemies.push(enemy);
         this.game.debug.onEnemySpawn(enemy);
         return enemy;
     }
 
     update(dt) {
+        // Boss enrage: when a boss is the only living enemy, it enrages
+        const alive = this.enemies.filter(e => e.alive && e.deathTimer < 0);
+        if (alive.length === 1 && alive[0].type === 'boss' && !alive[0].enraged && !this.game.waves.spawning) {
+            const boss = alive[0];
+            boss.enraged = true;
+            boss.baseSpeed = Math.round(boss.baseSpeed * 1.5);
+            boss.baseArmor = Math.max(0, boss.baseArmor - 0.30);
+            boss.armor = Math.max(0, boss.armor - 0.30);
+            this.game.particles.spawnBigFloatingText(boss.x, boss.y - 30, 'ENRAGED!', '#ff4444');
+            this.game.audio.playWaveStart();
+            this.game.triggerShake(5, 0.25);
+        }
+
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const e = this.enemies[i];
             e.update(dt);

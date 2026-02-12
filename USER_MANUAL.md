@@ -20,6 +20,8 @@ Enemies get 1.04x HP per level, so higher levels are progressively harder. Your 
 
 Level 3 features a compressed 15-wave schedule (instead of 20) with two special events: a **Gold Rush** wave where all kills give double gold, and a **Bounty Boss** wave where killing the boss earns a +150g bonus.
 
+Level 7 is a **Boss Rush** — only 10 waves, but bosses appear every other wave. Wave 5 is an **Armor Break** event where all enemies spawn with halved armor. The finale features 5 bosses with a full escort.
+
 At Level 6+, enemies spawn from **two entry points** on opposite sides of the map, alternating between left and right. Both paths converge at the castle exit.
 
 ## Maps

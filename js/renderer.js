@@ -815,6 +815,18 @@ export class Renderer {
                 }
             }
 
+            // Enraged boss glow
+            if (e.enraged && !isDying) {
+                const pulse = 0.3 + 0.2 * Math.sin(this.game.elapsedTime * 8);
+                ctx.fillStyle = `rgba(255, 40, 40, ${pulse})`;
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, r + 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = `rgba(255, 0, 0, ${pulse + 0.2})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
             // Health bar (skip for dying enemies)
             if (!isDying && e.alive) {
                 const barW = e.radius * 2.5;
