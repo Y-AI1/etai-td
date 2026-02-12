@@ -1048,7 +1048,7 @@ body {
 
 /* ── Mobile Controls (D-pad + Abilities) ───────────────── */
 .mobile-only {
-    display: none; /* Hidden on desktop */
+    display: none !important; /* Hidden by default */
 }
 
 #mobile-controls {
@@ -1176,9 +1176,9 @@ body {
     }
 }
 
-/* Show mobile controls only on touchscreen devices */
+/* Show mobile controls only on touchscreen devices AND when hero is active */
 @media (hover: none) and (pointer: coarse) {
-    .mobile-only {
+    #canvas-wrapper.hero-active .mobile-only {
         display: block !important;
     }
 

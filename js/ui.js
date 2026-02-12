@@ -525,6 +525,16 @@ export class UI {
             }
         }
 
+        // Toggle hero-active class for mobile controls (only shows on mobile when hero is active)
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        if (canvasWrapper) {
+            if (game.hero.active) {
+                canvasWrapper.classList.add('hero-active');
+            } else {
+                canvasWrapper.classList.remove('hero-active');
+            }
+        }
+
         // Speed badge
         this.elSpeedBtn.textContent = `${game.speed}x`;
 
