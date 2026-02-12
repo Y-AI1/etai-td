@@ -208,6 +208,17 @@ export class Renderer {
             ctx.restore();
         }
 
+        // Low lives warning — pulsing red border when lives <= 5
+        if (this.game.economy.lives <= 5 && this.game.economy.lives > 0 && this.game.state === 'PLAYING') {
+            const pulse = 0.15 + 0.15 * Math.sin(this.game.elapsedTime * 4);
+            ctx.save();
+            ctx.globalAlpha = pulse;
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 12;
+            ctx.strokeRect(0, 0, CANVAS_W, CANVAS_H);
+            ctx.restore();
+        }
+
         // Draw UI overlay
         this.drawUIOverlay();
     }

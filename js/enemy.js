@@ -262,6 +262,9 @@ export class EnemyManager {
                 this.game.debug.onEnemyLeaked(e);
                 this.game.economy.loseLives(e.livesCost);
                 this.game.particles.spawnBigFloatingText(e.x, e.y - 10, `-${e.livesCost}`, '#ffffff');
+                if (this.game.economy.lives > 0 && this.game.economy.lives <= 5) {
+                    this.game.audio.playLowLivesWarning();
+                }
                 if (this.game.economy.lives <= 0) {
                     this.game.gameOver();
                 }

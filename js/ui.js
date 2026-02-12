@@ -513,6 +513,7 @@ export class UI {
             this.elWave.textContent = `Wave ${waves.currentWave}/${totalWaves}`;
         }
         this.elLives.innerHTML = `&#9829; ${eco.lives}`;
+        this.elLives.classList.toggle('lives-critical', eco.lives <= 5 && eco.lives > 0);
         this.elGold.textContent = `\u{1FA99} ${eco.gold}`;
         this.elLevelInfo.textContent = `Level ${game.worldLevel}`;
 
@@ -630,6 +631,8 @@ export class UI {
             return `${cur} <span style="color:${color}">&rarr; ${next}</span>`;
         };
 
+        const pct = v => `${Math.round(v * 100)}%`;
+
         let statsHtml = `<div>${arrow(tower.damage, nextLvl?.damage)} dmg</div>`;
         statsHtml += `<div>${arrow(tower.range.toFixed(1), nextLvl ? nextLvl.range.toFixed(1) : null)} range</div>`;
         statsHtml += `<div>${arrow((1/tower.fireRate).toFixed(1), nextLvl ? (1/nextLvl.fireRate).toFixed(1) : null)}/s</div>`;
@@ -638,6 +641,30 @@ export class UI {
         }
         if (tower.splashRadius) {
             statsHtml += `<div>${arrow(tower.splashRadius.toFixed(1), nextLvl?.splashRadius?.toFixed(1))} splash</div>`;
+        }
+        if (tower.slowFactor) {
+            statsHtml += `<div>${arrow(pct(1 - tower.slowFactor), nextLvl?.slowFactor ? pct(1 - nextLvl.slowFactor) : null)} slow</div>`;
+        }
+        if (tower.freezeChance) {
+            statsHtml += `<div>${arrow(pct(tower.freezeChance), nextLvl?.freezeChance ? pct(nextLvl.freezeChance) : null)} freeze</div>`;
+        }
+        if (tower.chainCount) {
+            statsHtml += `<div>${arrow(tower.chainCount, nextLvl?.chainCount)} chain</div>`;
+        }
+        if (tower.forkCount) {
+            statsHtml += `<div>${arrow(tower.forkCount, nextLvl?.forkCount)} fork</div>`;
+        }
+        if (tower.shockChance) {
+            statsHtml += `<div>${arrow(pct(tower.shockChance), nextLvl?.shockChance ? pct(nextLvl.shockChance) : null)} shock</div>`;
+        }
+        if (tower.heavyEvery) {
+            statsHtml += `<div>heavy per ${arrow(tower.heavyEvery, nextLvl?.heavyEvery)}</div>`;
+        }
+        if (tower.armorShred) {
+            statsHtml += `<div>${arrow(pct(tower.armorShred), nextLvl?.armorShred ? pct(nextLvl.armorShred) : null)} shred</div>`;
+        }
+        if (tower.critChance) {
+            statsHtml += `<div>${arrow(pct(tower.critChance), nextLvl?.critChance ? pct(nextLvl.critChance) : null)} crit</div>`;
         }
         statsHtml += `<div>Target: <span style="color:${modeColor};font-weight:700">${targetMode}</span></div>`;
 
@@ -791,6 +818,13 @@ export class UI {
         if (goEl) goEl.textContent = scoreText;
         const vicEl = document.getElementById('victory-score');
         if (vicEl) vicEl.textContent = scoreText;
+
+        // Dynamic victory subtitle
+        if (name === 'victory') {
+            const totalW = getTotalWaves(this.game.worldLevel);
+            const vicSub = screen.querySelector('.screen-subtitle');
+            if (vicSub) vicSub.textContent = `You survived all ${totalW} waves! Excellent strategy!`;
+        }
 
         // Populate level-up screen
         if (name === 'level-up') {

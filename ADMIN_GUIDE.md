@@ -22,6 +22,10 @@ Press **`** (backtick) to toggle admin mode. When active, a sidebar panel appear
 
 Note: **E** is a hidden cheat (kill all) that works without admin mode.
 
+### Auto-Wave System
+
+The game has an auto-wave toggle (default: on). When enabled, the next wave starts automatically after 5 seconds between waves. Players can toggle this via the "Auto" badge in the top bar. State is stored in `game.autoWave`. The timer runs in `wave.js update()` when `betweenWaves` is true.
+
 ### Admin Panel Sections
 
 The sidebar displays four sections:
@@ -689,6 +693,23 @@ if (!localStorage.getItem('td_v5_clean')) {
 - Tooltip card shows on `mouseenter` of tower buttons with preview, stats, and special ability.
 - Fire Arrow tooltip shows burn DPS and duration.
 - Positioned with `position: fixed` above the hovered button.
+
+### Low Lives Warning
+
+When lives drop to 5 or below, three warning indicators activate:
+- **Red border pulse:** Pulsing red `strokeRect` on game canvas (renderer.js), synced to `game.elapsedTime`
+- **Lives badge glow:** CSS animation `.lives-critical` pulses the text-shadow on the lives HUD element
+- **Warning tone:** `audio.playLowLivesWarning()` plays a two-tone alert beep each time an enemy leaks while lives ≤ 5
+
+### Next-Wave Preview
+
+Between waves, a panel renders at the bottom of the UI canvas showing enemy types and counts for the upcoming wave. Uses `wave.getNextWavePreview()` which returns `{type: count}`. Enemy icons are drawn using `drawEnemyShape()` with actual enemy shapes (pentagon, diamond, etc.).
+
+### Tower Info Card
+
+Clicking a placed tower shows a detailed info card with all stats and upgrade preview arrows (green = improvement, red = downgrade). Stats shown:
+- Core: damage, range, fire rate
+- Conditional: burn DPS, splash radius, slow %, freeze %, chain count, fork count, shock %, heavy round interval, armor shred %, crit %
 
 ### Visual Effects
 - **Screen shake:** `game.triggerShake(intensity, duration)` — random offset applied during `drawFrame`.

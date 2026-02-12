@@ -91,6 +91,15 @@ body {
     text-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
 }
 
+.lives-critical {
+    animation: lives-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes lives-pulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(231, 76, 60, 0.5); }
+    50% { text-shadow: 0 0 18px rgba(231, 76, 60, 1), 0 0 30px rgba(231, 76, 60, 0.6); }
+}
+
 .avatar-level-group {
     display: flex;
     align-items: center;

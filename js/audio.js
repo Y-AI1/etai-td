@@ -305,4 +305,12 @@ export class Audio {
         this.playTone('sine', 400, 600, 0.15, 0.12);
         this.playTone('triangle', 800, 1200, 0.1, 0.08);
     }
+
+    playLowLivesWarning() {
+        this.ensureContext();
+        if (!this.ctx || this.muted) return;
+        // Two-tone alert beep
+        this.playTone('square', 600, 400, 0.08, 0.12);
+        this.playTone('square', 400, 300, 0.06, 0.1);
+    }
 }

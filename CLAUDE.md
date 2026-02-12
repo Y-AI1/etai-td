@@ -37,8 +37,9 @@ Open `http://localhost:8000` in a modern browser. There are no tests or linters 
 
 - `playerLevel` is 0-based (stored in localStorage), displayed as `playerLevel + 1`
 - `worldLevel = playerLevel + 1` set in `start()`; these must always agree with the menu display
-- Beat 20 waves on any map → level up. Gold resets to `150 + level × 150` each level
+- Beat all waves on any map → level up (20 default, 15 for Level 3). Gold resets to `150 + level × 150` each level
 - HP scaling: `wave * 1.10^wave` per wave, `1.055^(level-1)` per level, plus per-map `worldHpMultiplier`
+- Auto-wave: enabled by default (`game.autoWave`), auto-starts next wave after 5s. Toggle via Auto badge in top bar
 - Tower unlocks: some by wave number (`unlockWave`), some by player level (`unlockLevel`)
 - Map unlocks: Serpentine always, Split Creek at Lv.5, Gauntlet at Lv.10
 
@@ -85,3 +86,12 @@ Per-environment animated particles drawn on the game canvas (ground layer, befor
 - Hero WASD keys conflict with admin hotkeys (W=wave, D=download) when admin mode is active
 - PostFX canvas textures need `UNPACK_FLIP_Y_WEBGL = true` or the image renders upside-down
 - Screen flash in `renderer.js` is gated behind `!postfx.enabled` — the PostFX shader handles flash when active
+
+## UI Features
+
+- **Auto-wave toggle:** `game.autoWave` (default true), auto-starts next wave after 5s delay. Toggle badge in top bar next to speed control
+- **Next-wave preview:** Between waves, `wave.getNextWavePreview()` returns enemy counts; rendered on UI canvas with actual enemy shapes via `drawEnemyShape()`
+- **Low lives warning:** When `economy.lives <= 5`, pulsing red border on game canvas + CSS animation on lives badge + alert sound on each life lost. Warning sound: `audio.playLowLivesWarning()`
+- **Wave modifier badge:** Active modifier name shown inline in wave counter during the wave (ui.js `update()`)
+- **Tower info card:** Shows all tower stats with upgrade preview arrows — damage, range, fire rate, burn, splash, slow %, freeze %, chain count, fork count, shock %, heavy round interval, armor shred %, crit %
+- **Victory screen:** Wave count is dynamic via `getTotalWaves(worldLevel)` — correctly shows "15 waves" for Level 3

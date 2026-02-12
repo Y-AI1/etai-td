@@ -1,10 +1,10 @@
 # Etai's Tower Defence
 
-Defend your base against 20 waves of enemies by building and upgrading towers along the path. Enemies follow the path from entry to exit — if they reach the end, you lose lives. Lose all 20 lives and it's game over.
+Defend your base against waves of enemies by building and upgrading towers along the path. Enemies follow the path from entry to exit — if they reach the end, you lose lives. Lose all 20 lives and it's game over.
 
 ## Player Level
 
-You have a global player level that persists across all games. Beat 20 waves on any map to level up. Your level unlocks new maps and towers:
+You have a global player level that persists across all games. Beat all waves on any map to level up (20 waves default, 15 for Level 3). Your level unlocks new maps and towers:
 
 | Level | Unlocks |
 |-------|---------|
@@ -19,6 +19,8 @@ You have a global player level that persists across all games. Beat 20 waves on 
 Enemies get 1.055x HP per level, so higher levels are progressively harder. Your tower panel updates automatically as you unlock new towers — Arrow and Frost are replaced by Fire Arrow and Deep Frost at Level 2.
 
 Level 3 features a compressed 15-wave schedule (instead of 20) with two special events: a **Gold Rush** wave where all kills give double gold, and a **Bounty Boss** wave where killing the boss earns a +150g bonus.
+
+At Level 6+, enemies spawn from **two entry points** on opposite sides of the map, alternating between left and right. Both paths converge at the castle exit.
 
 ## Maps
 
@@ -55,7 +57,7 @@ At Level 3, you unlock a hero unit that spawns near the castle (exit). Control i
 
 ## Towers
 
-Hover over any tower button in the bottom bar to see a preview card with the tower image, stats, and special ability. The tower panel is dynamic — it shows only the towers available at your current level. Keys 1-5 always map to whichever towers are visible.
+Hover over any tower button in the bottom bar to see a preview card with the tower image, stats, and special ability. Click a placed tower to see its full info card with all stats (damage, range, fire rate, slow, freeze, chain, shock, crit, etc.) plus upgrade previews. The tower panel is dynamic — it shows only the towers available at your current level. Keys 1-5 always map to whichever towers are visible.
 
 ### Starter Towers (Level 1)
 
@@ -129,9 +131,9 @@ Premium arrow tower that sets enemies on fire. High damage with a burn damage-ov
 
 | Level | Damage | Range | Fire Rate | Burn DPS | Burn Duration | Upgrade Cost |
 |-------|--------|-------|-----------|----------|---------------|-------------|
-| 1 | 21 | 3.5 | 3.3/s | 3/s | 3.0s | — |
-| 2 | 33 | 4.0 | 4.0/s | 5/s | 3.5s | $120 |
-| 3 | 47 | 4.5 | 5.0/s | 8/s | 4.0s | $200 |
+| 1 | 16 | 3.5 | 3.3/s | 3/s | 3.0s | — |
+| 2 | 25 | 4.0 | 4.0/s | 5/s | 3.5s | $120 |
+| 3 | 36 | 4.5 | 5.0/s | 8/s | 4.0s | $200 |
 
 **Total investment:** $520 fully upgraded. Burn damage ignores armor — strong against tanks and bosses. If a stronger burn is applied while burning, the enemy takes the stronger one.
 
@@ -141,9 +143,9 @@ An aura-based tower that pulses cold damage to ALL enemies in range simultaneous
 
 | Level | Damage | Range | Slow | Freeze Chance | Freeze Duration | Upgrade Cost |
 |-------|--------|-------|------|---------------|-----------------|-------------|
-| 1 | 5 | 3.0 | 60% | 5% | 0.8s | — |
-| 2 | 8 | 3.5 | 50% | 8% | 1.0s | $100 |
-| 3 | 12 | 4.0 | 40% | 12% | 1.2s | $175 |
+| 1 | 10 | 3.0 | 40% | 10% | 0.8s | — |
+| 2 | 16 | 3.5 | 50% | 15% | 1.0s | $100 |
+| 3 | 24 | 4.0 | 60% | 20% | 1.2s | $175 |
 
 **Total investment:** $425 fully upgraded. The aura pulse hits all enemies in range — no projectiles to miss. Frozen enemies stop completely (speed = 0). Place at chokepoints for maximum crowd control.
 
@@ -204,7 +206,7 @@ Armor reduces all incoming damage by its percentage (e.g., 27% armor means the e
 
 ## Wave Modifiers
 
-Starting from wave 3, some waves get a random modifier that buffs all enemies in that wave. The modifier badge appears next to the wave counter in the top bar.
+Starting from wave 3, some waves get a random modifier that buffs all enemies in that wave. A colored badge appears next to the wave counter in the top bar showing the active modifier name (e.g., "Armored", "Swift"). A floating text announcement also appears at wave start.
 
 | Modifier | Effect | Color |
 |----------|--------|-------|
@@ -257,6 +259,13 @@ Set frost/deep frost towers to **First** so they slow the leading enemy. Set sni
 | WASD / Arrows | Move hero unit (Level 3+) |
 | Q | Hero AoE stun (Level 3+) |
 | E | Hero gold magnet (Level 3+) |
+
+## HUD Features
+
+- **Auto-Wave:** Enabled by default — the next wave starts automatically after 5 seconds. Click the "Auto" badge (next to speed) to toggle manual mode.
+- **Next-Wave Preview:** Between waves, a panel appears at the bottom showing the enemy types and counts for the upcoming wave with their actual icons.
+- **Low Lives Warning:** When lives drop to 5 or below, the screen border pulses red and the lives counter glows as an urgent warning.
+- **Wave Modifier Badge:** During a modified wave, the modifier name appears as a colored badge next to the wave counter.
 
 ## Strategy Guide
 
