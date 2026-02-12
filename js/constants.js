@@ -383,9 +383,9 @@ export const TOWER_TYPES = {
         burn: true,
         unlockLevel: 2,
         levels: [
-            { damage: 21, range: 3.5, fireRate: 0.30, projSpeed: 320, burnDamage: 3, burnDuration: 3.0 },
-            { damage: 33, range: 4.0, fireRate: 0.25, projSpeed: 360, burnDamage: 5, burnDuration: 3.5, upgradeCost: 120 },
-            { damage: 47, range: 4.5, fireRate: 0.20, projSpeed: 400, burnDamage: 8, burnDuration: 4.0, upgradeCost: 200 },
+            { damage: 16, range: 3.5, fireRate: 0.30, projSpeed: 320, burnDamage: 3, burnDuration: 3.0 },
+            { damage: 25, range: 4.0, fireRate: 0.25, projSpeed: 360, burnDamage: 5, burnDuration: 3.5, upgradeCost: 120 },
+            { damage: 36, range: 4.5, fireRate: 0.20, projSpeed: 400, burnDamage: 8, burnDuration: 4.0, upgradeCost: 200 },
         ],
     },
     frost: {
@@ -407,9 +407,9 @@ export const TOWER_TYPES = {
         aura: true,
         unlockLevel: 2,
         levels: [
-            { damage: 5, range: 3.0, fireRate: 1.2, slowFactor: 0.6, slowDuration: 1.5, freezeChance: 0.05, freezeDuration: 0.8 },
-            { damage: 8, range: 3.5, fireRate: 0.85, slowFactor: 0.5, slowDuration: 2.0, freezeChance: 0.08, freezeDuration: 1.0, upgradeCost: 100 },
-            { damage: 12, range: 4.0, fireRate: 0.7, slowFactor: 0.4, slowDuration: 2.5, freezeChance: 0.12, freezeDuration: 1.2, upgradeCost: 175 },
+            { damage: 10, range: 3.0, fireRate: 1.2, slowFactor: 0.6, slowDuration: 1.5, freezeChance: 0.10, freezeDuration: 0.8 },
+            { damage: 16, range: 3.5, fireRate: 0.85, slowFactor: 0.5, slowDuration: 2.0, freezeChance: 0.15, freezeDuration: 1.0, upgradeCost: 100 },
+            { damage: 24, range: 4.0, fireRate: 0.7, slowFactor: 0.4, slowDuration: 2.5, freezeChance: 0.20, freezeDuration: 1.2, upgradeCost: 175 },
         ],
     },
     lightning: {
@@ -521,7 +521,7 @@ export const ENEMY_TYPES = {
         reward: 6,
         livesCost: 1,
         color: '#e74c3c',
-        radius: 8,
+        radius: 9,
         armor: 0,
     },
     runner: {
@@ -531,7 +531,7 @@ export const ENEMY_TYPES = {
         reward: 5,
         livesCost: 1,
         color: '#f39c12',
-        radius: 6,
+        radius: 8,
         armor: 0,
     },
     tank: {
@@ -541,7 +541,7 @@ export const ENEMY_TYPES = {
         reward: 17,
         livesCost: 2,
         color: '#2c3e50',
-        radius: 12,
+        radius: 13,
         armor: 0.27,
     },
     healer: {
@@ -551,7 +551,7 @@ export const ENEMY_TYPES = {
         reward: 11,
         livesCost: 1,
         color: '#2ecc71',
-        radius: 8,
+        radius: 9,
         armor: 0,
         healRadius: 1.5,  // grid cells
         healRate: 3,       // HP per second to nearby allies
@@ -563,7 +563,7 @@ export const ENEMY_TYPES = {
         reward: 53,
         livesCost: 5,
         color: '#8e44ad',
-        radius: 16,
+        radius: 18,
         armor: 0.20,
     },
     swarm: {
@@ -573,7 +573,7 @@ export const ENEMY_TYPES = {
         reward: 3,
         livesCost: 1,
         color: '#e67e22',
-        radius: 5,
+        radius: 6,
         armor: 0,
     },
 };

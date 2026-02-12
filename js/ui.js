@@ -622,18 +622,32 @@ export class UI {
         const def = TOWER_TYPES[tower.type];
         const iconSrc = this.towerIconsLg && this.towerIconsLg[tower.type] ? this.towerIconsLg[tower.type] : '';
 
+        // Next level stats for upgrade preview
+        const nextLvl = tower.level < def.levels.length - 1 ? def.levels[tower.level + 1] : null;
+        const arrow = (cur, next) => {
+            if (next == null || next === cur) return `${cur}`;
+            const color = next > cur ? '#2ecc71' : '#e74c3c';
+            return `${cur} <span style="color:${color}">&rarr; ${next}</span>`;
+        };
+
+        let statsHtml = `<div>${arrow(tower.damage, nextLvl?.damage)} dmg</div>`;
+        statsHtml += `<div>${arrow(tower.range.toFixed(1), nextLvl ? nextLvl.range.toFixed(1) : null)} range</div>`;
+        statsHtml += `<div>${arrow((1/tower.fireRate).toFixed(1), nextLvl ? (1/nextLvl.fireRate).toFixed(1) : null)}/s</div>`;
+        if (tower.burnDamage) {
+            statsHtml += `<div>${arrow(tower.burnDamage, nextLvl?.burnDamage)} burn</div>`;
+        }
+        if (tower.splashRadius) {
+            statsHtml += `<div>${arrow(tower.splashRadius.toFixed(1), nextLvl?.splashRadius?.toFixed(1))} splash</div>`;
+        }
+        statsHtml += `<div>Target: <span style="color:${modeColor};font-weight:700">${targetMode}</span></div>`;
+
         let html = `
             <div class="tower-info-header">
                 <span class="tower-info-name" style="color:${def.color}">${tower.name} Tower</span>
                 <span class="tower-info-level">Lv.${tower.level + 1}</span>
             </div>
             <div class="tower-info-body">
-                <div class="tower-info-stats">
-                    <div>Damage: ${tower.damage}</div>
-                    <div>Range: ${tower.range.toFixed(1)}</div>
-                    <div>Rate: ${(1 / tower.fireRate).toFixed(1)}/s</div>
-                    <div>Target: <span style="color:${modeColor};font-weight:700">${targetMode}</span></div>
-                </div>
+                <div class="tower-info-stats">${statsHtml}</div>
                 ${iconSrc ? `<div class="tower-info-icon-wrap" style="--tc:${def.color}"><img class="tower-info-icon" src="${iconSrc}"></div>` : ''}
             </div>
             <div class="tower-info-actions">

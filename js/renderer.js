@@ -1,4 +1,4 @@
-import { CANVAS_W, CANVAS_H, CELL, COLS, ROWS, TOWER_TYPES, TARGET_MODES, LEVEL_HP_MULTIPLIER, TOTAL_WAVES, HERO_STATS, getWaveHPScale, getTotalWaves } from './constants.js';
+import { CANVAS_W, CANVAS_H, CELL, COLS, ROWS, TOWER_TYPES, TARGET_MODES, LEVEL_HP_MULTIPLIER, TOTAL_WAVES, HERO_STATS, ENEMY_TYPES, getWaveHPScale, getTotalWaves } from './constants.js';
 
 export class Renderer {
     constructor(canvases, game) {
@@ -3016,6 +3016,81 @@ export class Renderer {
             ctx.arc(tower.x, tower.y, tower.range * CELL, 0, Math.PI * 2);
             ctx.stroke();
             ctx.setLineDash([]);
+        }
+
+        // Next-wave preview (shown between waves)
+        if (this.game.waves.betweenWaves && this.game.state === 'PLAYING') {
+            const preview = this.game.waves.getNextWavePreview();
+            if (preview) {
+                const entries = Object.entries(preview);
+                const colW = 140;
+                const totalW = entries.length * colW;
+                const startX = CANVAS_W / 2 - totalW / 2;
+                const baseY = CANVAS_H - 80;
+
+                // Background panel
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                const bgPad = 16;
+                const panelH = 70;
+                const panelTop = baseY - 20;
+                ctx.beginPath();
+                const cr = 8;
+                ctx.moveTo(startX - bgPad + cr, panelTop);
+                ctx.lineTo(startX + totalW + bgPad - cr, panelTop);
+                ctx.arcTo(startX + totalW + bgPad, panelTop, startX + totalW + bgPad, panelTop + cr, cr);
+                ctx.lineTo(startX + totalW + bgPad, panelTop + panelH - cr);
+                ctx.arcTo(startX + totalW + bgPad, panelTop + panelH, startX + totalW + bgPad - cr, panelTop + panelH, cr);
+                ctx.lineTo(startX - bgPad + cr, panelTop + panelH);
+                ctx.arcTo(startX - bgPad, panelTop + panelH, startX - bgPad, panelTop + panelH - cr, cr);
+                ctx.lineTo(startX - bgPad, panelTop + cr);
+                ctx.arcTo(startX - bgPad, panelTop, startX - bgPad + cr, panelTop, cr);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Label
+                ctx.save();
+                ctx.font = 'bold 14px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillText('NEXT WAVE', CANVAS_W / 2, panelTop - 4);
+                ctx.restore();
+
+                // Enemy entries with actual shapes
+                const fakeEnemy = { type: '', angle: 0 };
+                for (let i = 0; i < entries.length; i++) {
+                    const [type, count] = entries[i];
+                    const def = ENEMY_TYPES[type];
+                    if (!def) continue;
+                    const cx = startX + i * colW + colW / 2;
+                    const cy = baseY + 8;
+                    const iconR = 14;
+
+                    // Draw actual enemy shape
+                    fakeEnemy.type = type;
+                    ctx.fillStyle = def.color;
+                    this.drawEnemyShape(ctx, fakeEnemy, cx - 30, cy, iconR);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    // Count (large bold)
+                    ctx.save();
+                    ctx.font = 'bold 22px monospace';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(`x${count}`, cx - 12, cy - 2);
+                    // Type name below
+                    ctx.font = 'bold 12px monospace';
+                    ctx.fillStyle = def.color;
+                    ctx.fillText(def.name, cx - 12, cy + 16);
+                    ctx.restore();
+                }
+            }
         }
 
         // Admin sidebar

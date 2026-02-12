@@ -46,6 +46,8 @@ export class WaveManager {
         this.waveTag = getWaveTag(this.game.worldLevel, this.currentWave);
         if (this.waveTag === 'goldrush') {
             this.game.particles.spawnBigFloatingText(CANVAS_W / 2, CANVAS_H / 3, 'GOLD RUSH!', '#ffd700');
+        } else if (this.waveTag === 'midboss') {
+            this.game.particles.spawnBigFloatingText(CANVAS_W / 2, CANVAS_H / 3, 'BOUNTY BOSS!', '#2ecc71');
         }
 
         // Roll for wave modifier
@@ -56,6 +58,12 @@ export class WaveManager {
             const keys = Object.keys(WAVE_MODIFIERS);
             this.modifier = keys[Math.floor(Math.random() * keys.length)];
             this.modifierDef = WAVE_MODIFIERS[this.modifier];
+            // Announce modifier
+            this.game.particles.spawnBigFloatingText(
+                CANVAS_W / 2, CANVAS_H / 2.5,
+                `${this.modifierDef.name.toUpperCase()}! ${this.modifierDef.desc}`,
+                this.modifierDef.color
+            );
         }
 
         const waveDef = this.getWaveDefinition(this.currentWave);
@@ -119,8 +127,8 @@ export class WaveManager {
         // Track time between waves for early-send bonus
         if (this.betweenWaves) {
             this.betweenWaveTimer += dt;
-            // Auto-start next wave after 3 seconds
-            if (this.game.autoWave && this.betweenWaveTimer >= 3) {
+            // Auto-start next wave after 5 seconds
+            if (this.game.autoWave && this.betweenWaveTimer >= 5) {
                 this.startNextWave();
             }
             return;
@@ -152,6 +160,18 @@ export class WaveManager {
         if (allDone) {
             this.spawning = false;
         }
+    }
+
+    getNextWavePreview() {
+        const nextWave = this.currentWave + 1;
+        if (nextWave > getTotalWaves(this.game.worldLevel)) return null;
+        const waveDef = this.getWaveDefinition(nextWave);
+        // Aggregate by type
+        const counts = {};
+        for (const g of waveDef) {
+            counts[g.type] = (counts[g.type] || 0) + g.count;
+        }
+        return counts;
     }
 
     isWaveComplete() {
