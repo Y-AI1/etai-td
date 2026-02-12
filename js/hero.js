@@ -46,7 +46,9 @@ export class Hero {
     }
 
     init(map) {
-        const spawn = map.path[0];
+        // Spawn near the castle (second-to-last waypoint), facing enemies
+        const path = map.path;
+        const spawn = path.length >= 2 ? path[path.length - 2] : path[path.length - 1];
         this.spawnX = spawn.x;
         this.spawnY = spawn.y;
         this.x = this.spawnX;
@@ -56,7 +58,7 @@ export class Hero {
         this.active = true;
         this.hp = HERO_STATS.maxHP;
         this.maxHP = HERO_STATS.maxHP;
-        this.turretAngle = 0;
+        this.turretAngle = Math.PI; // face left (towards enemies)
 
         this.attackCooldown = 0;
         this.contactTimer = 0;
