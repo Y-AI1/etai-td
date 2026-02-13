@@ -201,65 +201,199 @@ export class GameMap {
             : layout.waypoints[layout.waypoints.length - 1];
         const cx = exitPt.x * CELL + CELL / 2;
         const cy = exitPt.y * CELL + CELL / 2;
-        const s = 1.8; // scale factor
+        const s = 2.2; // scale factor
 
-        // Castle base
-        ctx.fillStyle = '#5a5a6a';
-        ctx.fillRect(cx - 18 * s, cy - 14 * s, 36 * s, 28 * s);
+        // --- Ground shadow ---
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.fillRect(cx - 26 * s, cy + 14 * s, 52 * s, 4 * s);
+
+        // --- Stone base (foundation) ---
+        ctx.fillStyle = '#4a4a5a';
+        ctx.fillRect(cx - 25 * s, cy - 2 * s, 50 * s, 18 * s);
+
+        // --- Main wall ---
+        ctx.fillStyle = '#6e6e7e';
+        ctx.fillRect(cx - 22 * s, cy - 16 * s, 44 * s, 30 * s);
 
         // Lighter front face
-        ctx.fillStyle = '#7a7a8a';
-        ctx.fillRect(cx - 16 * s, cy - 12 * s, 32 * s, 24 * s);
+        ctx.fillStyle = '#7e7e8e';
+        ctx.fillRect(cx - 20 * s, cy - 14 * s, 40 * s, 26 * s);
 
-        // Gate (dark arch)
-        ctx.fillStyle = '#2a2a3a';
-        ctx.beginPath();
-        ctx.moveTo(cx - 8 * s, cy + 14 * s);
-        ctx.lineTo(cx - 8 * s, cy);
-        ctx.arc(cx, cy, 8 * s, Math.PI, 0);
-        ctx.lineTo(cx + 8 * s, cy + 14 * s);
-        ctx.closePath();
-        ctx.fill();
-
-        // Battlements (crenellations)
-        ctx.fillStyle = '#5a5a6a';
-        const bw = 8 * s, bh = 6 * s, gap = 4 * s;
-        for (let i = -2; i <= 2; i++) {
-            ctx.fillRect(cx + i * (bw + gap) - bw / 2, cy - 14 * s - bh, bw, bh);
+        // Stone texture lines
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+            const ly = cy - 10 * s + i * 7 * s;
+            ctx.beginPath();
+            ctx.moveTo(cx - 19 * s, ly);
+            ctx.lineTo(cx + 19 * s, ly);
+            ctx.stroke();
         }
 
-        // Left tower
-        ctx.fillStyle = '#6a6a7a';
-        ctx.fillRect(cx - 24 * s, cy - 22 * s, 12 * s, 44 * s);
-        ctx.fillStyle = '#5a5a6a';
-        ctx.fillRect(cx - 26 * s, cy - 26 * s, 16 * s, 6 * s);
-        // Tower top crenellations
-        ctx.fillRect(cx - 26 * s, cy - 30 * s, 5 * s, 4 * s);
-        ctx.fillRect(cx - 16 * s, cy - 30 * s, 5 * s, 4 * s);
-
-        // Right tower
-        ctx.fillStyle = '#6a6a7a';
-        ctx.fillRect(cx + 12 * s, cy - 22 * s, 12 * s, 44 * s);
-        ctx.fillStyle = '#5a5a6a';
-        ctx.fillRect(cx + 10 * s, cy - 26 * s, 16 * s, 6 * s);
-        ctx.fillRect(cx + 10 * s, cy - 30 * s, 5 * s, 4 * s);
-        ctx.fillRect(cx + 20 * s, cy - 30 * s, 5 * s, 4 * s);
-
-        // Flag on right tower
-        ctx.fillStyle = '#e74c3c';
+        // --- Gate (dark arch with portcullis) ---
+        ctx.fillStyle = '#1a1a2a';
         ctx.beginPath();
-        ctx.moveTo(cx + 19 * s, cy - 30 * s);
-        ctx.lineTo(cx + 32 * s, cy - 25 * s);
-        ctx.lineTo(cx + 19 * s, cy - 20 * s);
+        ctx.moveTo(cx - 9 * s, cy + 14 * s);
+        ctx.lineTo(cx - 9 * s, cy - 2 * s);
+        ctx.arc(cx, cy - 2 * s, 9 * s, Math.PI, 0);
+        ctx.lineTo(cx + 9 * s, cy + 14 * s);
         ctx.closePath();
         ctx.fill();
-        // Flagpole
-        ctx.strokeStyle = '#aaa';
-        ctx.lineWidth = 2;
+
+        // Portcullis bars
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.5;
+        for (let i = -2; i <= 2; i++) {
+            const bx = cx + i * 3.5 * s;
+            ctx.beginPath();
+            ctx.moveTo(bx, cy - 2 * s);
+            ctx.lineTo(bx, cy + 14 * s);
+            ctx.stroke();
+        }
+
+        // --- Shield emblem above gate ---
+        ctx.fillStyle = '#c0392b';
         ctx.beginPath();
-        ctx.moveTo(cx + 19 * s, cy - 36 * s);
-        ctx.lineTo(cx + 19 * s, cy - 20 * s);
+        ctx.moveTo(cx, cy - 16 * s);
+        ctx.lineTo(cx + 5 * s, cy - 12 * s);
+        ctx.lineTo(cx, cy - 7 * s);
+        ctx.lineTo(cx - 5 * s, cy - 12 * s);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#f1c40f';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
+
+        // --- Main wall battlements (7 merlons) ---
+        ctx.fillStyle = '#5e5e6e';
+        const bw = 5 * s, bh = 5 * s, gap = 2.5 * s;
+        for (let i = -3; i <= 3; i++) {
+            ctx.fillRect(cx + i * (bw + gap) - bw / 2, cy - 16 * s - bh, bw, bh);
+        }
+
+        // --- Central keep ---
+        ctx.fillStyle = '#6a6a7a';
+        ctx.fillRect(cx - 10 * s, cy - 28 * s, 20 * s, 14 * s);
+        ctx.fillStyle = '#7a7a8a';
+        ctx.fillRect(cx - 8 * s, cy - 26 * s, 16 * s, 10 * s);
+
+        // Keep mini-battlements (3)
+        ctx.fillStyle = '#5e5e6e';
+        for (let i = -1; i <= 1; i++) {
+            ctx.fillRect(cx + i * 7 * s - 2.5 * s, cy - 28 * s - 4 * s, 5 * s, 4 * s);
+        }
+
+        // Keep window
+        ctx.fillStyle = '#e8c84a';
+        ctx.fillRect(cx - 2 * s, cy - 24 * s, 4 * s, 5 * s);
+
+        // --- Left round tower ---
+        const ltx = cx - 22 * s; // tower center x
+        ctx.fillStyle = '#626272';
+        ctx.beginPath();
+        ctx.moveTo(ltx - 8 * s, cy + 14 * s);
+        ctx.lineTo(ltx - 8 * s, cy - 30 * s);
+        ctx.arc(ltx, cy - 30 * s, 8 * s, Math.PI, 0);
+        ctx.lineTo(ltx + 8 * s, cy + 14 * s);
+        ctx.closePath();
+        ctx.fill();
+        // Tower highlight
+        ctx.fillStyle = '#72727f';
+        ctx.fillRect(ltx - 3 * s, cy - 28 * s, 6 * s, 40 * s);
+
+        // Left conical roof
+        ctx.fillStyle = '#3a3a4a';
+        ctx.beginPath();
+        ctx.moveTo(ltx, cy - 42 * s);
+        ctx.lineTo(ltx - 10 * s, cy - 30 * s);
+        ctx.lineTo(ltx + 10 * s, cy - 30 * s);
+        ctx.closePath();
+        ctx.fill();
+
+        // Left tower arrow slits
+        ctx.fillStyle = '#e8c84a';
+        ctx.fillRect(ltx - 1.5 * s, cy - 18 * s, 3 * s, 6 * s);
+        ctx.fillRect(ltx - 1.5 * s, cy - 6 * s, 3 * s, 6 * s);
+
+        // Left flagpole + flag
+        ctx.strokeStyle = '#aaa';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(ltx, cy - 42 * s);
+        ctx.lineTo(ltx, cy - 52 * s);
+        ctx.stroke();
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.moveTo(ltx, cy - 52 * s);
+        ctx.lineTo(ltx + 10 * s, cy - 48 * s);
+        ctx.lineTo(ltx, cy - 44 * s);
+        ctx.closePath();
+        ctx.fill();
+
+        // --- Right round tower ---
+        const rtx = cx + 22 * s;
+        ctx.fillStyle = '#626272';
+        ctx.beginPath();
+        ctx.moveTo(rtx - 8 * s, cy + 14 * s);
+        ctx.lineTo(rtx - 8 * s, cy - 30 * s);
+        ctx.arc(rtx, cy - 30 * s, 8 * s, Math.PI, 0);
+        ctx.lineTo(rtx + 8 * s, cy + 14 * s);
+        ctx.closePath();
+        ctx.fill();
+        // Tower highlight
+        ctx.fillStyle = '#72727f';
+        ctx.fillRect(rtx - 3 * s, cy - 28 * s, 6 * s, 40 * s);
+
+        // Right conical roof
+        ctx.fillStyle = '#3a3a4a';
+        ctx.beginPath();
+        ctx.moveTo(rtx, cy - 42 * s);
+        ctx.lineTo(rtx - 10 * s, cy - 30 * s);
+        ctx.lineTo(rtx + 10 * s, cy - 30 * s);
+        ctx.closePath();
+        ctx.fill();
+
+        // Right tower arrow slits
+        ctx.fillStyle = '#e8c84a';
+        ctx.fillRect(rtx - 1.5 * s, cy - 18 * s, 3 * s, 6 * s);
+        ctx.fillRect(rtx - 1.5 * s, cy - 6 * s, 3 * s, 6 * s);
+
+        // Right flagpole + flag
+        ctx.strokeStyle = '#aaa';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(rtx, cy - 42 * s);
+        ctx.lineTo(rtx, cy - 52 * s);
+        ctx.stroke();
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.moveTo(rtx, cy - 52 * s);
+        ctx.lineTo(rtx + 10 * s, cy - 48 * s);
+        ctx.lineTo(rtx, cy - 44 * s);
+        ctx.closePath();
+        ctx.fill();
+
+        // --- Torches flanking gate ---
+        const torchY = cy - 4 * s;
+        for (const tx of [cx - 13 * s, cx + 13 * s]) {
+            // Torch bracket
+            ctx.fillStyle = '#555';
+            ctx.fillRect(tx - 1 * s, torchY, 2 * s, 5 * s);
+            // Flame glow
+            const grad = ctx.createRadialGradient(tx, torchY, 0, tx, torchY, 5 * s);
+            grad.addColorStop(0, 'rgba(255,200,50,0.7)');
+            grad.addColorStop(0.5, 'rgba(255,120,20,0.3)');
+            grad.addColorStop(1, 'rgba(255,80,0,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(tx, torchY, 5 * s, 0, Math.PI * 2);
+            ctx.fill();
+            // Flame core
+            ctx.fillStyle = '#ffe066';
+            ctx.beginPath();
+            ctx.arc(tx, torchY - 1 * s, 1.5 * s, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     drawSecondaryEntry(ctx) {

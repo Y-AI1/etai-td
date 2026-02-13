@@ -374,9 +374,9 @@ export const TOWER_TYPES = {
         color: '#4a7c3f',
         maxLevel: 1,
         levels: [
-            { damage: 12, range: 3.5, fireRate: 0.4, projSpeed: 300 },
-            { damage: 18, range: 4.0, fireRate: 0.33, projSpeed: 340, upgradeCost: 35 },
-            { damage: 28, range: 4.5, fireRate: 0.25, projSpeed: 380, upgradeCost: 70 },
+            { damage: 13, range: 3.5, fireRate: 0.4, projSpeed: 300 },
+            { damage: 19, range: 4.0, fireRate: 0.33, projSpeed: 340, upgradeCost: 35 },
+            { damage: 29, range: 4.5, fireRate: 0.25, projSpeed: 380, upgradeCost: 70 },
         ],
     },
     firearrow: {
