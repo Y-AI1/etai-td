@@ -1,4 +1,4 @@
-import { WAVES, TOTAL_WAVES, LEVEL_HP_MULTIPLIER, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, LEVEL_WAVES, getTotalWaves, getWaveTag, DUAL_SPAWN_LEVEL } from './constants.js';
+import { WAVES, TOTAL_WAVES, LEVEL_HP_MULTIPLIER, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, LEVEL_WAVES, getTotalWaves, getWaveTag, DUAL_SPAWN_LEVEL, ENDLESS_GOLDRUSH_INTERVAL } from './constants.js';
 
 export class WaveManager {
     constructor(game) {
@@ -44,6 +44,10 @@ export class WaveManager {
 
         // Set special wave tag
         this.waveTag = getWaveTag(this.game.worldLevel, this.currentWave);
+        // Endless mode: goldrush every N waves
+        if (this.game.endlessMode && !this.waveTag && this.currentWave % ENDLESS_GOLDRUSH_INTERVAL === 0) {
+            this.waveTag = 'goldrush';
+        }
         if (this.waveTag === 'goldrush') {
             this.game.particles.spawnBigFloatingText(CANVAS_W / 2, CANVAS_H / 3, 'GOLD RUSH!', '#ffd700');
         } else if (this.waveTag === 'midboss') {
@@ -166,7 +170,7 @@ export class WaveManager {
 
     getNextWavePreview() {
         const nextWave = this.currentWave + 1;
-        if (nextWave > getTotalWaves(this.game.worldLevel)) return null;
+        if (!this.game.endlessMode && nextWave > getTotalWaves(this.game.worldLevel)) return null;
         const waveDef = this.getWaveDefinition(nextWave);
         // Aggregate by type
         const counts = {};
@@ -206,8 +210,8 @@ export class WaveManager {
 
         this.game.particles.spawnFloatingText(CANVAS_W / 2, CANVAS_H / 3, `Wave ${this.currentWave} Complete! +${bonus + interest}g`, '#ffd700');
 
-        // Level up after completing all waves
-        if (this.currentWave >= getTotalWaves(this.game.worldLevel)) {
+        // Level up after completing all waves (skip in endless mode)
+        if (!this.game.endlessMode && this.currentWave >= getTotalWaves(this.game.worldLevel)) {
             this.game.levelUp();
             return;
         }

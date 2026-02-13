@@ -28,6 +28,7 @@ export class Game {
         this.worldLevel = 0;
         this.adminMode = false;
         this.autoWave = true;
+        this.endlessMode = false;
         this.elapsedTime = 0;
         this.waveElapsed = 0;
 
@@ -105,6 +106,24 @@ export class Game {
         this.ui.update();
     }
 
+    startEndless(mapId) {
+        this.audio.ensureContext();
+        this.endlessMode = true;
+        this.selectMap(mapId);
+        this.worldLevel = Economy.getPlayerLevel() + 1;
+        this.economy.levelUpReset(this.worldLevel);
+        this.map = new GameMap(this.selectedMapId, this.getLayoutIndex(), this.worldLevel);
+        this.renderer.drawTerrain();
+        this.heroDeathsThisLevel = 0;
+        if (this.worldLevel >= HERO_STATS.unlockLevel) this.hero.init(this.map);
+        else this.hero.reset();
+        this.state = STATE.PLAYING;
+        this.ui.setupTowerPanel();
+        this.ui.hideAllScreens();
+        this.waves.startNextWave();
+        this.ui.update();
+    }
+
     toggleAdmin() {
         this.adminMode = !this.adminMode;
         if (this.adminMode) {
@@ -129,11 +148,15 @@ export class Game {
 
     gameOver() {
         this.state = STATE.GAME_OVER;
+        if (this.endlessMode) {
+            Economy.setEndlessRecord(this.selectedMapId, this.waves.currentWave);
+        }
         this.audio.playGameOver();
         this.ui.showScreen('game-over');
     }
 
     levelUp() {
+        if (this.endlessMode) return; // endless never levels up
         this.state = STATE.LEVEL_UP;
         Economy.setPlayerLevel(this.worldLevel);
         this.achievements.increment('levelsCompleted');
@@ -176,6 +199,7 @@ export class Game {
         this.state = STATE.MENU;
         this.selectedMapId = null;
         this.worldLevel = 0;
+        this.endlessMode = false;
         this.elapsedTime = 0;
         this.waveElapsed = 0;
         this.shakeTimer = 0;

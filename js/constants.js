@@ -635,6 +635,10 @@ export const TOTAL_WAVES = 20;
 export const LEVEL_HP_MULTIPLIER = 1.04;
 export const DUAL_SPAWN_LEVEL = 6;
 
+// ── Endless Mode ─────────────────────────────────────────
+export const ENDLESS_UNLOCK_LEVEL = 1;       // must have beaten Level 1
+export const ENDLESS_GOLDRUSH_INTERVAL = 10; // goldrush every 10 waves
+
 // ── Level-Specific Wave Overrides ─────────────────────────
 export const GOLD_RUSH_MULTIPLIER = 2;
 export const MIDBOSS_BOUNTY = 150;

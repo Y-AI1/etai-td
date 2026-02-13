@@ -1,4 +1,4 @@
-import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, TOTAL_WAVES, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, HERO_STATS, getTotalWaves, DUAL_SPAWN_LEVEL, TOWER_UNLOCKS, VERSION } from './constants.js';
+import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, TOTAL_WAVES, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, HERO_STATS, getTotalWaves, DUAL_SPAWN_LEVEL, TOWER_UNLOCKS, VERSION, ENDLESS_UNLOCK_LEVEL } from './constants.js';
 import { Economy } from './economy.js';
 
 export class UI {
@@ -22,6 +22,8 @@ export class UI {
 
         this.elToast = document.getElementById('achievement-toast');
         this._toastBusy = false;
+        this.endlessToggle = false;
+        this.elEndlessBtn = document.getElementById('endless-btn');
 
         const versionEl = document.getElementById('about-version');
         if (versionEl) versionEl.textContent = `Version ${VERSION}`;
@@ -41,11 +43,29 @@ export class UI {
         const levelEl = document.getElementById('menu-player-level');
         if (levelEl) {
             const rec = Economy.getRecord();
-            levelEl.textContent = `Level ${playerLevel + 1}` + (rec > 0 ? `  |  Record: ${rec}` : '');
+            let text = `Level ${playerLevel + 1}` + (rec > 0 ? `  |  Record: ${rec}` : '');
+            // Show best endless record across all maps
+            const allEndless = Economy.getEndlessRecord();
+            let bestWave = 0, bestMap = '';
+            for (const [mapId, wave] of Object.entries(allEndless)) {
+                if (wave > bestWave) { bestWave = wave; bestMap = mapId; }
+            }
+            if (bestWave > 0) {
+                const mapName = MAP_DEFS[bestMap]?.name || bestMap;
+                text += `  |  Endless: Wave ${bestWave} (${mapName})`;
+            }
+            levelEl.textContent = text;
         }
 
         const resetBtn = document.getElementById('reset-btn');
         if (resetBtn) resetBtn.style.display = playerLevel >= 1 ? '' : 'none';
+
+        // Endless mode toggle visibility
+        if (this.elEndlessBtn) {
+            this.elEndlessBtn.style.display = (playerLevel + 1) > ENDLESS_UNLOCK_LEVEL ? '' : 'none';
+            this.elEndlessBtn.classList.toggle('active', this.endlessToggle);
+            this.elEndlessBtn.textContent = this.endlessToggle ? 'Endless Mode: ON' : 'Endless Mode';
+        }
 
         for (const [id, def] of Object.entries(MAP_DEFS)) {
             const reqLevel = def.requiredLevel || 0;
@@ -85,8 +105,12 @@ export class UI {
             if (!mapLocked) {
                 card.addEventListener('click', () => {
                     this.game.audio.ensureContext();
-                    this.game.selectMap(id);
-                    this.game.start();
+                    if (this.endlessToggle) {
+                        this.game.startEndless(id);
+                    } else {
+                        this.game.selectMap(id);
+                        this.game.start();
+                    }
                 });
             }
 
@@ -518,6 +542,13 @@ export class UI {
             this.showScreen('menu');
         });
 
+        // Endless mode toggle
+        this.elEndlessBtn?.addEventListener('click', () => {
+            this.endlessToggle = !this.endlessToggle;
+            this.elEndlessBtn.classList.toggle('active', this.endlessToggle);
+            this.elEndlessBtn.textContent = this.endlessToggle ? 'Endless Mode: ON' : 'Endless Mode';
+        });
+
         // Reset progress
         document.getElementById('reset-btn')?.addEventListener('click', () => {
             this.showScreen('reset');
@@ -551,11 +582,14 @@ export class UI {
 
         // Top bar info — wave + modifier badge
         const totalWaves = getTotalWaves(game.worldLevel);
+        const waveText = game.endlessMode
+            ? `Wave ${waves.currentWave}`
+            : `Wave ${waves.currentWave}/${totalWaves}`;
         const modDef = waves.modifierDef;
         if (modDef && !waves.betweenWaves) {
-            this.elWave.innerHTML = `Wave ${waves.currentWave}/${totalWaves} <span style="background:${modDef.color};color:#000;padding:1px 6px;border-radius:4px;font-size:0.8em;font-weight:700;margin-left:4px">${modDef.name}</span>`;
+            this.elWave.innerHTML = `${waveText} <span style="background:${modDef.color};color:#000;padding:1px 6px;border-radius:4px;font-size:0.8em;font-weight:700;margin-left:4px">${modDef.name}</span>`;
         } else {
-            this.elWave.textContent = `Wave ${waves.currentWave}/${totalWaves}`;
+            this.elWave.textContent = waveText;
         }
         this.elLives.innerHTML = `&#9829; ${eco.lives}`;
         this.elLives.classList.toggle('lives-critical', eco.lives <= 5 && eco.lives > 0);
@@ -861,6 +895,7 @@ export class UI {
 
         // Refresh map records when returning to menu
         if (name === 'menu') {
+            this.endlessToggle = false;
             this.refreshMapRecords();
         }
 
@@ -872,6 +907,24 @@ export class UI {
         if (goEl) goEl.textContent = scoreText;
         const vicEl = document.getElementById('victory-score');
         if (vicEl) vicEl.textContent = scoreText;
+
+        // Endless mode game-over extras
+        const endlessInfoEl = document.getElementById('game-over-endless');
+        if (endlessInfoEl) {
+            if (this.game.endlessMode && name === 'game-over') {
+                const wave = this.game.waves.currentWave;
+                const mapName = MAP_DEFS[this.game.selectedMapId]?.name || this.game.selectedMapId;
+                const record = Economy.getEndlessRecord(this.game.selectedMapId);
+                const isNewRecord = wave >= record;
+                endlessInfoEl.style.display = 'block';
+                endlessInfoEl.innerHTML = `
+                    <div class="endless-wave-reached">Reached Wave ${wave}${isNewRecord ? ' — New Record!' : ''}</div>
+                    <div class="endless-record">Endless Record: Wave ${record} (${mapName})</div>
+                `;
+            } else {
+                endlessInfoEl.style.display = 'none';
+            }
+        }
 
         // Dynamic victory subtitle
         if (name === 'victory') {

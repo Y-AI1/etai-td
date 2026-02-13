@@ -890,6 +890,43 @@ body {
     font-weight: 600;
 }
 
+/* ── Endless Mode Toggle ──────────────────────────────── */
+.endless-toggle {
+    background: #2c3e50;
+    font-size: 14px;
+    padding: 8px 24px;
+    margin-bottom: 12px;
+    border: 2px solid #555;
+    transition: all 0.2s;
+}
+
+.endless-toggle:hover {
+    background: #3d566e;
+    border-color: #e67e22;
+}
+
+.endless-toggle.active {
+    background: linear-gradient(135deg, #3a2000, #4a3000);
+    color: #ffd700;
+    border-color: #e67e22;
+    box-shadow: 0 0 16px rgba(230, 126, 34, 0.5);
+}
+
+/* ── Endless Game Over Info ──────────────────────────── */
+.endless-wave-reached {
+    font-size: 24px;
+    font-weight: 700;
+    color: #e67e22;
+    margin-bottom: 6px;
+    text-shadow: 0 0 12px rgba(230, 126, 34, 0.5);
+}
+
+.endless-record {
+    font-size: 14px;
+    color: #bbb;
+    margin-bottom: 12px;
+}
+
 /* ── Menu Buttons ──────────────────────────────────────── */
 .menu-buttons {
     display: flex;

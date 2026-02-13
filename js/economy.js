@@ -80,4 +80,17 @@ export class Economy {
     static setPlayerLevelDirect(level) {
         localStorage.setItem('td_player_level', level);
     }
+
+    static getEndlessRecord(mapId) {
+        const data = JSON.parse(localStorage.getItem('td_endless_record') || '{}');
+        return mapId ? (data[mapId] || 0) : data;
+    }
+
+    static setEndlessRecord(mapId, wave) {
+        const data = JSON.parse(localStorage.getItem('td_endless_record') || '{}');
+        if (wave > (data[mapId] || 0)) {
+            data[mapId] = wave;
+            localStorage.setItem('td_endless_record', JSON.stringify(data));
+        }
+    }
 }
