@@ -512,6 +512,18 @@ export class UI {
             this.showScreen('menu');
         });
 
+        // Reset progress
+        document.getElementById('reset-btn')?.addEventListener('click', () => {
+            if (confirm('Reset all progress? This will clear your level, score, and achievements.')) {
+                for (const key of Object.keys(localStorage)) {
+                    if (key.startsWith('td_')) localStorage.removeItem(key);
+                }
+                this.game.achievements.stats = {};
+                this.game.achievements.unlocked = {};
+                this.game.restart();
+            }
+        });
+
         // Trophy buttons
         document.getElementById('trophy-btn')?.addEventListener('click', () => {
             this.buildTrophyScreen();
