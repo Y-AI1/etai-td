@@ -1,4 +1,4 @@
-import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, TOTAL_WAVES, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, HERO_STATS, getTotalWaves, DUAL_SPAWN_LEVEL, TOWER_UNLOCKS } from './constants.js';
+import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, TOTAL_WAVES, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, HERO_STATS, getTotalWaves, DUAL_SPAWN_LEVEL, TOWER_UNLOCKS, VERSION } from './constants.js';
 import { Economy } from './economy.js';
 
 export class UI {
@@ -22,6 +22,9 @@ export class UI {
 
         this.elToast = document.getElementById('achievement-toast');
         this._toastBusy = false;
+
+        const versionEl = document.getElementById('about-version');
+        if (versionEl) versionEl.textContent = `Version ${VERSION}`;
 
         this.setupTowerPanel();
         this.setupControls();

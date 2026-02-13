@@ -1,3 +1,6 @@
+// ── Version ───────────────────────────────────────────────
+export const VERSION = '1.0.0';
+
 // ── Canvas & Grid ──────────────────────────────────────────
 export const COLS = 30;
 export const ROWS = 20;
