@@ -30,7 +30,7 @@ Open `http://localhost:8000` in a modern browser. There are no tests or linters 
 - Entity managers use backwards iteration when splicing arrays (enemy deaths, projectile removal)
 - Particle system is object-pooled (500 max) to avoid GC pressure
 - Audio is procedural via Web Audio API — no audio files. Context must init on user interaction
-- Grid coordinates are `gx, gy`; world pixel coordinates are `x, y`. Grid is 30×20 cells, 48px each
+- Grid coordinates are `gx, gy`; world pixel coordinates are `x, y`. Grid is 30×20 cells, 56px each
 - localStorage keys use `td_` prefix: `td_player_level`, `td_high_score`, `td_wave_debug_log_v2`
 
 ## Progression System
