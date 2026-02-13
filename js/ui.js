@@ -44,6 +44,9 @@ export class UI {
             levelEl.textContent = `Level ${playerLevel + 1}` + (rec > 0 ? `  |  Record: ${rec}` : '');
         }
 
+        const resetBtn = document.getElementById('reset-btn');
+        if (resetBtn) resetBtn.style.display = playerLevel >= 1 ? '' : 'none';
+
         for (const [id, def] of Object.entries(MAP_DEFS)) {
             const reqLevel = def.requiredLevel || 0;
             const mapLocked = reqLevel > 0 && (playerLevel + 1) < reqLevel;
@@ -517,14 +520,18 @@ export class UI {
 
         // Reset progress
         document.getElementById('reset-btn')?.addEventListener('click', () => {
-            if (confirm('Reset all progress? This will clear your level, score, and achievements.')) {
-                for (const key of Object.keys(localStorage)) {
-                    if (key.startsWith('td_')) localStorage.removeItem(key);
-                }
-                this.game.achievements.stats = {};
-                this.game.achievements.unlocked = {};
-                this.game.restart();
+            this.showScreen('reset');
+        });
+        document.getElementById('reset-confirm-btn')?.addEventListener('click', () => {
+            for (const key of Object.keys(localStorage)) {
+                if (key.startsWith('td_')) localStorage.removeItem(key);
             }
+            this.game.achievements.stats = {};
+            this.game.achievements.unlocked = {};
+            this.game.restart();
+        });
+        document.getElementById('reset-cancel-btn')?.addEventListener('click', () => {
+            this.showScreen('menu');
         });
 
         // Trophy buttons
@@ -846,7 +853,7 @@ export class UI {
         if (screen) screen.classList.add('visible');
 
         // Hide/show gameplay bars — menu-child screens also hide bars
-        const onMenu = name === 'menu' || name === 'trophy' || name === 'manual' || name === 'about';
+        const onMenu = name === 'menu' || name === 'trophy' || name === 'manual' || name === 'about' || name === 'reset';
         const topBar = document.getElementById('top-bar');
         const bottomBar = document.getElementById('bottom-bar');
         if (topBar) topBar.style.display = onMenu ? 'none' : 'flex';

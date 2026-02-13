@@ -102,7 +102,7 @@
                     <button id="trophy-btn" class="screen-btn manual-btn">Trophies</button>
                     <button id="manual-btn" class="screen-btn manual-btn">How to Play</button>
                     <button id="about-btn" class="screen-btn manual-btn">About</button>
-                    <button id="reset-btn" class="screen-btn manual-btn reset-btn">Reset Progress</button>
+                    <button id="reset-btn" class="screen-btn manual-btn reset-btn">Restart!</button>
                 </div>
             </div>
 
@@ -380,6 +380,18 @@
                     </div>
                     <div class="trophy-scroll">
                         <div id="trophy-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reset-screen" class="game-screen">
+                <div class="reset-dialog">
+                    <div class="screen-title" style="color:#e74c3c;font-size:32px">Start Over?</div>
+                    <div class="screen-subtitle" style="max-width:340px">This will reset your progress back to Level 1. Your score, unlocks, and trophies will all be cleared.</div>
+                    <div class="screen-subtitle" style="color:#e74c3c;font-weight:700;margin-bottom:20px">This cannot be undone!</div>
+                    <div style="display:flex;gap:12px;justify-content:center">
+                        <button id="reset-confirm-btn" class="screen-btn" style="background:#e74c3c">Yes, Restart</button>
+                        <button id="reset-cancel-btn" class="screen-btn" style="background:#2c3e50">Cancel</button>
                     </div>
                 </div>
             </div>

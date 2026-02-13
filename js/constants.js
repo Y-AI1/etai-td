@@ -4,9 +4,9 @@ export const VERSION = '1.0.0';
 // ── Canvas & Grid ──────────────────────────────────────────
 export const COLS = 30;
 export const ROWS = 20;
-export const CELL = 48;
-export const CANVAS_W = COLS * CELL; // 1440
-export const CANVAS_H = ROWS * CELL; // 960
+export const CELL = 56;
+export const CANVAS_W = COLS * CELL; // 1680
+export const CANVAS_H = ROWS * CELL; // 1120
 
 // ── Game States ────────────────────────────────────────────
 export const STATE = {

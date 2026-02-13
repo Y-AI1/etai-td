@@ -21,10 +21,10 @@ body {
 /* ── Game Container ────────────────────────────────────── */
 #game-container {
     position: relative;
-    width: 1440px;
+    width: 1680px;
     transform: scale(0.75);
     transform-origin: top center;
-    margin-bottom: -240px; /* Adjust for scaled height */
+    margin-bottom: -280px; /* Adjust for scaled height */
 }
 
 /* ── Top Bar ───────────────────────────────────────────── */
@@ -346,8 +346,8 @@ body {
 /* ── Canvas Stack ──────────────────────────────────────── */
 #canvas-wrapper {
     position: relative;
-    width: 1440px;
-    height: 960px;
+    width: 1680px;
+    height: 1120px;
     border: 1px solid #0f3460;
     cursor: crosshair;
 }
@@ -357,7 +357,7 @@ body {
     display: none;
     width: 230px;
     min-width: 230px;
-    height: 960px;
+    height: 1120px;
     background: #0d1b2a;
     border: 1px solid #0f3460;
     border-left: none;
@@ -1451,14 +1451,14 @@ body {
 @media (max-width: 1150px) {
     #game-container {
         transform: scale(0.65);
-        margin-bottom: -336px;
+        margin-bottom: -392px;
     }
 }
 
 @media (max-width: 950px) {
     #game-container {
         transform: scale(0.55);
-        margin-bottom: -432px;
+        margin-bottom: -504px;
     }
     .tower-btn {
         padding: 4px 6px;
