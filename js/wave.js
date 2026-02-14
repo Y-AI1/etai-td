@@ -256,7 +256,7 @@ export class WaveManager {
 
         // Secondary reinforcement bursts: when secondary lane is cleared
         // but primary enemies remain, send reinforcements to keep pressure up
-        if (!this.spawning && this.game.getEffectiveWave() > DUAL_SPAWN_WAVE) {
+        if (!this.spawning && this.game.getEffectiveWave() >= 20) {
             const enemies = this.game.enemies.enemies;
             const hasPrimary = enemies.some(e => e.alive && !e.isSecondary && e.deathTimer < 0);
             const hasSecondary = enemies.some(e => e.alive && e.isSecondary && e.deathTimer < 0);

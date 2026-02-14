@@ -597,7 +597,7 @@ export const ENEMY_TYPES = {
     },
     runner: {
         name: 'Runner',
-        baseHP: 8,
+        baseHP: 7,
         speed: 125,    // (+15%)
         reward: 5,
         livesCost: 1,
@@ -607,7 +607,7 @@ export const ENEMY_TYPES = {
     },
     tank: {
         name: 'Tank',
-        baseHP: 95,
+        baseHP: 90,
         speed: 40,     // (+15%)
         reward: 14,
         livesCost: 2,
@@ -617,7 +617,7 @@ export const ENEMY_TYPES = {
     },
     healer: {
         name: 'Healer',
-        baseHP: 40,
+        baseHP: 30,
         speed: 65,     // (+15%)
         reward: 10,
         livesCost: 1,
