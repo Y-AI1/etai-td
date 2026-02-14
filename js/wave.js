@@ -1,4 +1,4 @@
-import { WAVES, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, DUAL_SPAWN_WAVE, FLYING_START_WAVE, GOLDRUSH_INTERVAL, SPEED_MAX, WAVE_GEN, STATE } from './constants.js';
+import { WAVES, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, DUAL_SPAWN_WAVE, DUAL_SPAWN_START_PCT, DUAL_SPAWN_RAMP_PCT, DUAL_SPAWN_MAX_PCT, FLYING_START_WAVE, GOLDRUSH_INTERVAL, SPEED_MAX, WAVE_GEN, STATE } from './constants.js';
 import { Economy } from './economy.js';
 
 export class WaveManager {
@@ -207,12 +207,12 @@ export class WaveManager {
                 this.groupTimers[g] -= dt;
 
                 if (this.groupTimers[g] <= 0) {
-                    // Dual-spawn ramp: wave 15 = 0% (build phase), wave 16+ ramps 8%→25%
+                    // Dual-spawn ramp: wave 15 = 0% (build phase), wave 16+ ramps 5%→25%
                     let useSecondary = false;
                     const effectiveWave = this.game.getEffectiveWave();
                     if (effectiveWave > DUAL_SPAWN_WAVE) {
                         const wavesIntoDual = effectiveWave - DUAL_SPAWN_WAVE - 1;
-                        const chance = Math.min(0.08 + wavesIntoDual * 0.02, 0.25);
+                        const chance = Math.min(DUAL_SPAWN_START_PCT + wavesIntoDual * DUAL_SPAWN_RAMP_PCT, DUAL_SPAWN_MAX_PCT);
                         useSecondary = Math.random() < chance;
                     }
                     this.game.enemies.spawn(group.type, hpScale, this.modifier, useSecondary);
