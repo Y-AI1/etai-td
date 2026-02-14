@@ -13,14 +13,16 @@ Every world is an **endless survival run** — you play until you lose all 20 li
 | 5 | Sniper | — |
 | 10 | Fire Arrow, Deep Frost | Arrow, Frost (auto-upgraded) |
 | 14 | Hero unit (WASD-controlled) | — |
-| 15 | Dual Spawn — enemies attack from two sides | — |
+| 15 | Dual Spawn + Flying enemies | — |
 | 20 | Missile Sniper | Sniper (auto-upgraded) |
 | 25 | Super Lightning, Bi-Cannon | Lightning, Cannon (auto-upgraded) |
 | 30 | Pulse Cannon | — |
 
 When a threshold is crossed, the game pauses and shows an unlock screen with the new tower stats. Click **Continue** to resume. Replaced towers on the field are auto-upgraded for free.
 
-**Dual spawn** starts at just ~6% of enemies using the second entry and ramps up over 8 waves to 50%.
+**Dual spawn** starts at ~8% of enemies using the second entry at wave 16 and ramps up to 25%. If all secondary enemies are killed while primary enemies remain, reinforcements spawn from the secondary path to keep pressure up.
+
+**Flying enemies** also begin at wave 15 — purple winged enemies that spawn at the castle, fly a curvy path backward to the middle of the map, then land and walk to the exit. They are **untargetable while airborne** — towers, hero, and splash can't hit them until they land. Count scales from 1 at wave 15 to 10 by wave 30.
 
 **Goldrush** waves occur every 10 waves — all kills give double gold. **Bosses** appear every 5 waves from wave 10 onward.
 
@@ -81,9 +83,9 @@ Low damage but slows enemies, making them spend more time in range of your other
 
 | Level | Damage | Range | Fire Rate | Slow | Duration | Upgrade Cost |
 |-------|--------|-------|-----------|------|----------|-------------|
-| 1 | 5 | 3.0 | 1.3/s | 50% | 2.0s | — |
-| 2 | 8 | 3.5 | 1.4/s | 60% | 2.5s | $55 |
-| 3 | 12 | 4.0 | 1.7/s | 70% | 3.0s | $100 |
+| 1 | 5 | 3.0 | 1.3/s | 43% | 2.0s | — |
+| 2 | 8 | 3.5 | 1.4/s | 51% | 2.5s | $55 |
+| 3 | 13 | 4.0 | 1.7/s | 60% | 3.0s | $100 |
 
 **Total investment:** $230 fully upgraded. Place before your damage towers so enemies are slowed when they enter the killzone.
 
@@ -145,9 +147,9 @@ An aura-based tower that pulses cold damage to ALL enemies in range simultaneous
 
 | Level | Damage | Range | Slow | Freeze Chance | Freeze Duration | Upgrade Cost |
 |-------|--------|-------|------|---------------|-----------------|-------------|
-| 1 | 10 | 3.0 | 40% | 10% | 0.8s | — |
-| 2 | 16 | 3.5 | 50% | 15% | 1.0s | $100 |
-| 3 | 24 | 4.0 | 60% | 20% | 1.2s | $175 |
+| 1 | 11 | 3.0 | 34% | 10% | 0.8s | — |
+| 2 | 17 | 3.5 | 43% | 15% | 1.0s | $100 |
+| 3 | 25 | 4.0 | 51% | 20% | 1.2s | $175 |
 
 **Total investment:** $425 fully upgraded. The aura pulse hits all enemies in range — no projectiles to miss. Frozen enemies stop completely (speed = 0). Place at chokepoints for maximum crowd control.
 
@@ -211,10 +213,11 @@ A teal energy cannon that fires shockwave pulses, dealing splash damage and knoc
 |------|-------|----|-------|-------|---------|-----------|
 | **Grunt** | Pentagon | 30 | Medium (70) | 0% | — | 1 |
 | **Runner** | Diamond | 15 | Fast (125) | 0% | — | 1 |
-| **Tank** | Square | 100 | Slow (40) | 27% | — | 2 |
+| **Tank** | Square | 98 | Slow (40) | 27% | — | 2 |
 | **Healer** | Cross | 50 | Medium (65) | 0% | Heals nearby allies (3 HP/s) | 1 |
-| **Boss** | Hexagon | 400 | Very slow (26) | 20% | Screen shake + shockwave on death | 5 |
+| **Boss** | Hexagon | 388 | Very slow (26) | 20% | Screen shake + shockwave on death | 5 |
 | **Swarm** | Triangle | 8 | Fast (105) | 0% | Comes in large numbers | 1 |
+| **Flying** | Wings | 28 | Medium (88) | 0% | Airborne until landing — untargetable while flying | 1 |
 
 HP scales exponentially each wave. By wave 20, enemies have roughly 134x the HP of wave 1.
 
@@ -295,7 +298,7 @@ Wave 6 is a swarm wave (20 fast enemies). Have at least one Cannon or Lightning 
 
 ### Late Game (Waves 11+)
 
-Bosses appear every 5 waves. At wave 14, the hero unlocks — position it at chokepoints for free DPS and stun crowd control. Wave 15 introduces dual spawn (enemies from two directions), ramping up gradually. At wave 20 Missile Sniper replaces Sniper, and at wave 25 Super Lightning and Bi-Cannon replace Lightning and Cannon. Use the early-send bonus aggressively to bank extra gold for upgrades.
+Bosses appear every 5 waves. At wave 14, the hero unlocks — position it at chokepoints for free DPS and stun crowd control. Wave 15 introduces dual spawn (enemies from two directions) and flying enemies that bypass your early defenses by landing mid-path. Make sure you have tower coverage in the middle and late sections of the path — not just at the entrance. At wave 20 Missile Sniper replaces Sniper, and at wave 25 Super Lightning and Bi-Cannon replace Lightning and Cannon. Use the early-send bonus aggressively to bank extra gold for upgrades.
 
 ### Tower Synergies
 

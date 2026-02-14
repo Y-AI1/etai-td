@@ -55,7 +55,7 @@ Every world is an **endless wave-based survival run**. No levels — you play un
 | 5 | Sniper | — |
 | 10 | Fire Arrow, Deep Frost | Arrow, Frost (auto-upgraded) |
 | 14 | Hero (WASD unit) | — |
-| 15 | Dual Spawn (gradual ramp ~6%→50% over 8 waves) | — |
+| 15 | Dual Spawn + Flying enemies (1→10 scaling to wave 30) | — |
 | 20 | Missile Sniper | Sniper (auto-upgraded) |
 | 25 | Super Lightning, Bi-Cannon | Lightning, Cannon (auto-upgraded) |
 | 30 | Pulse Cannon | — |
@@ -82,7 +82,7 @@ Burn damage bypasses armor entirely — applied directly to HP, not through `tak
 
 ## Admin/Debug Mode
 
-Press backtick (`` ` ``) to toggle the admin panel with real-time DPS/efficiency stats and post-wave analysis. Hotkeys: `K` kill all, `W` set wave, `D` download CSV analytics. See `ADMIN_GUIDE.md` for full reference.
+Press backtick (`` ` ``) to toggle the admin panel with real-time DPS/efficiency stats and post-wave analysis. Hotkeys: `K` kill all, `W` set wave, `G` add 1000 gold, `D` download CSV analytics. See `ADMIN_GUIDE.md` for full reference.
 
 ## PostFX (WebGL2 Post-Processing)
 
@@ -98,9 +98,26 @@ Press backtick (`` ` ``) to toggle the admin panel with real-time DPS/efficiency
 
 WASD-controlled hero spawns when `getEffectiveWave() >= 14` (unlockWave in HERO_STATS). Auto-attacks nearest enemy (15 dmg, 3.5 range, 2/s). Two abilities: Q = AoE stun (3-cell radius, 1.5s, 15s cooldown), E = gold magnet (2x kill gold in 4-cell radius, 8s duration, 20s cooldown). Takes contact damage from enemies (type-dependent multipliers). Dies at 0 HP, respawns after 5s. Managed by `hero.js`, updated after enemies/before towers in game loop.
 
+## Flying Enemy (Wave 15+)
+
+At wave 15, flying enemies begin appearing — 1 per wave initially, scaling to 10 by wave 30. They spawn at the castle (exit), fly a curvy sine-wave path backward to a random midpoint (40-60% of path), then land and walk normally to the exit. While airborne they are **untargetable** — towers, hero, splash, chain lightning, scorch zones, and knockback all skip them. After landing they become normal ground enemies.
+
+- Stats in `ENEMY_TYPES.flying`: HP 28, speed 88, reward 9, radius 11, purple color
+- Flight: 110 px/s, 2-3 sine oscillations with 60-100px amplitude
+- Altitude arcs to 40px at midpoint, descends to 0 on landing
+- Always uses primary path (ignores dual-spawn secondary roll)
+- `enemy.flying` boolean gates all targeting/damage checks
+- `enemy.flyProgress` (0→1) drives position along sine curve
+- Visual: wing shape (`drawWing()` in renderer.js), shadow at ground level while airborne
+- Wave count: `Math.min(10, 1 + Math.round((waveNum - 15) * 9 / 15))`
+
 ## Dual Spawn Points (Wave 15+)
 
-At `getEffectiveWave() >= DUAL_SPAWN_WAVE` (15), enemies can spawn from a second entry point. Each layout in `MAP_DEFS` has `secondaryWaypoints` entering from x=29 (right edge), converging at the same exit. Secondary usage ramps gradually: ~6% at wave 15, increasing ~6.3% per wave, capping at 50% by wave 22. Unlock triggers a full unlock screen (bold warning + Continue button). Secondary paths are always carved in `GameMap` (so they appear on previews). Split Creek primary enemies still fork upper/lower; secondary enemies use a single right-side path.
+At `getEffectiveWave() >= DUAL_SPAWN_WAVE` (15), enemies can spawn from a second entry point. Each layout in `MAP_DEFS` has `secondaryWaypoints` entering from x=29 (right edge), converging at the same exit. Secondary usage ramps gradually: ~8% at wave 16, increasing ~2% per wave, capping at 25%. Unlock triggers a full unlock screen (bold warning + Continue button). Secondary paths are always carved in `GameMap` (so they appear on previews). Split Creek primary enemies still fork upper/lower; secondary enemies use a single right-side path.
+
+### Secondary Reinforcement Bursts
+
+When all secondary-path enemies are killed but primary enemies remain, reinforcement bursts spawn from the secondary path to keep pressure up. After a 4-second delay, 2-3 random enemies (grunt/runner/swarm) spawn from secondary. Up to 3 bursts per wave. Enemies are tagged with `isSecondary` on spawn for tracking. Logic lives in `WaveManager.update()` (`reinforceTimer`, `reinforceBursts`).
 
 ## Ambient Map Effects
 
@@ -115,6 +132,7 @@ Per-environment animated particles drawn on the game canvas (ground layer, befor
 - PostFX canvas textures need `UNPACK_FLIP_Y_WEBGL = true` or the image renders upside-down
 - Screen flash in `renderer.js` is gated behind `!postfx.enabled` — the PostFX shader handles flash when active
 - Knockback has a per-enemy limit of 2 (`enemy.knockbackCount`) — after 2 knockbacks, further knockback is ignored (bosses are always immune)
+- Flying enemies (`e.flying`) must be skipped in ALL targeting/damage loops — `findTarget`, `getEnemiesInRange`, `doSplash`, `findChainTarget`, `doForkChain`, `updateScorchZones`, `checkContactDamage`
 - `_nextWaveCache` in wave.js must be cleared before `startNextWave()` when jumping waves (e.g. `adminSetWave`)
 - Tower icon cache (`towerIconsLg`) is pre-generated for ALL tower types on first `setupTowerPanel()` call — needed for unlock screen
 

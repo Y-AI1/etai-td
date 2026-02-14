@@ -28,6 +28,10 @@ export class WaveManager {
 
         // Cached next wave (so preview matches actual spawn)
         this._nextWaveCache = null;
+
+        // Secondary reinforcement bursts
+        this.reinforceTimer = 0;
+        this.reinforceBursts = 0;
     }
 
     startNextWave() {
@@ -62,6 +66,8 @@ export class WaveManager {
         this.waveComplete = false;
         this.betweenWaves = false;
         this.betweenWaveTimer = 0;
+        this.reinforceTimer = 0;
+        this.reinforceBursts = 0;
         this.game.waveElapsed = 0;
 
         // Goldrush every N waves
@@ -185,37 +191,60 @@ export class WaveManager {
             return;
         }
 
-        if (!this.spawning) return;
-
         const mapMul = this.game.map.def.worldHpMultiplier || 1;
         const hpScale = getWaveHPScale(this.currentWave) * mapMul * this.hpModifier;
-        let allDone = true;
 
-        for (let g = 0; g < this.spawnGroups.length; g++) {
-            const group = this.spawnGroups[g];
-            if (this.groupIndices[g] >= group.count) continue;
+        if (this.spawning) {
+            let allDone = true;
 
-            allDone = false;
-            this.groupTimers[g] -= dt;
+            for (let g = 0; g < this.spawnGroups.length; g++) {
+                const group = this.spawnGroups[g];
+                if (this.groupIndices[g] >= group.count) continue;
 
-            if (this.groupTimers[g] <= 0) {
-                // Dual-spawn ramp: wave 15 = 0% (build phase), wave 16+ ramps 8%→25%
-                let useSecondary = false;
-                const effectiveWave = this.game.getEffectiveWave();
-                if (effectiveWave > DUAL_SPAWN_WAVE) {
-                    const wavesIntoDual = effectiveWave - DUAL_SPAWN_WAVE - 1;
-                    const chance = Math.min(0.08 + wavesIntoDual * 0.02, 0.25);
-                    useSecondary = Math.random() < chance;
+                allDone = false;
+                this.groupTimers[g] -= dt;
+
+                if (this.groupTimers[g] <= 0) {
+                    // Dual-spawn ramp: wave 15 = 0% (build phase), wave 16+ ramps 8%→25%
+                    let useSecondary = false;
+                    const effectiveWave = this.game.getEffectiveWave();
+                    if (effectiveWave > DUAL_SPAWN_WAVE) {
+                        const wavesIntoDual = effectiveWave - DUAL_SPAWN_WAVE - 1;
+                        const chance = Math.min(0.08 + wavesIntoDual * 0.02, 0.25);
+                        useSecondary = Math.random() < chance;
+                    }
+                    this.game.enemies.spawn(group.type, hpScale, this.modifier, useSecondary);
+                    this.spawnCounter++;
+                    this.groupIndices[g]++;
+                    this.groupTimers[g] = group.interval;
                 }
-                this.game.enemies.spawn(group.type, hpScale, this.modifier, useSecondary);
-                this.spawnCounter++;
-                this.groupIndices[g]++;
-                this.groupTimers[g] = group.interval;
+            }
+
+            if (allDone) {
+                this.spawning = false;
             }
         }
 
-        if (allDone) {
-            this.spawning = false;
+        // Secondary reinforcement bursts: when secondary lane is cleared
+        // but primary enemies remain, send reinforcements to keep pressure up
+        if (!this.spawning && this.reinforceBursts < 3 && this.game.getEffectiveWave() > DUAL_SPAWN_WAVE) {
+            const enemies = this.game.enemies.enemies;
+            const hasPrimary = enemies.some(e => e.alive && !e.isSecondary && e.deathTimer < 0);
+            const hasSecondary = enemies.some(e => e.alive && e.isSecondary && e.deathTimer < 0);
+
+            if (hasPrimary && !hasSecondary) {
+                this.reinforceTimer += dt;
+                if (this.reinforceTimer >= 4) {
+                    this.reinforceTimer = 0;
+                    this.reinforceBursts++;
+                    const types = ['grunt', 'runner', 'swarm'];
+                    const burstType = types[Math.floor(Math.random() * types.length)];
+                    const burstCount = 2 + Math.floor(Math.random() * 2); // 2-3 enemies
+                    for (let i = 0; i < burstCount; i++) {
+                        this.game.enemies.spawn(burstType, hpScale, this.modifier, true);
+                    }
+                }
+            }
         }
     }
 
@@ -288,5 +317,7 @@ export class WaveManager {
         this.groupIndices = [];
         this.spawnCounter = 0;
         this._nextWaveCache = null;
+        this.reinforceTimer = 0;
+        this.reinforceBursts = 0;
     }
 }

@@ -20,7 +20,7 @@ Open `http://localhost:8000` in a modern browser with WebGL2 support.
 ## Features
 
 - **11 tower types** with unique mechanics — burn, freeze, chain lightning, splash, knockback, homing missiles, and more
-- **6 enemy types** — grunts, runners, tanks, healers, bosses, and swarms
+- **7 enemy types** — grunts, runners, tanks, healers, bosses, swarms, and flying enemies
 - **3 maps** with distinct strategic challenges — long winding paths, split forks, and short gauntlets
 - **Hero unit** (Wave 14+) — WASD-controlled character with AoE stun and gold magnet abilities
 - **Dual spawn points** (Wave 15+) — enemies gradually attack from two directions

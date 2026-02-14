@@ -14,6 +14,7 @@ Press **`** (backtick) to toggle admin mode. When active, a sidebar panel appear
 |-----|--------|-------------|
 | **K** | Kill all enemies on screen (with screen shake, flash, and explosion effects) | No |
 | **W** | Set wave — prompts for a wave number, clears the field, and jumps to that wave | Yes (prompt) |
+| **G** | Add 1000 gold (with floating text indicator) | No |
 | **C** | Clear the entire wave debug log from localStorage | Yes (confirm dialog) |
 | **R** | Reset progress — clears wave records and high score | Yes (confirm dialog) |
 | **D** | Download wave debug log as CSV file | No |
@@ -162,7 +163,7 @@ Wave 6+ are procedurally generated via `WaveManager.generateWave()` in `wave.js`
 
 | Field | Meaning |
 |-------|---------|
-| `type` | Enemy type key: `grunt`, `runner`, `tank`, `healer`, `boss`, `swarm` |
+| `type` | Enemy type key: `grunt`, `runner`, `tank`, `healer`, `boss`, `swarm`, `flying` |
 | `count` | Number of enemies in this group |
 | `interval` | Seconds between spawns within the group |
 | `delay` | Seconds before this group starts spawning (relative to wave start) |
@@ -223,10 +224,11 @@ Defined in `ENEMY_TYPES`. Each enemy has:
 |------|--------|-------|-------|------|
 | Grunt | 30 | 70 | 0 | Baseline |
 | Runner | 15 | 125 | 0 | Fast, fragile |
-| Tank | 100 | 40 | 0.27 | Slow, tanky |
+| Tank | 98 | 40 | 0.27 | Slow, tanky |
 | Healer | 50 | 65 | 0 | Heals nearby allies |
-| Boss | 400 | 26 | 0.20 | High HP, slow |
+| Boss | 388 | 26 | 0.20 | High HP, slow |
 | Swarm | 8 | 105 | 0 | Cheap, fast, overwhelming in numbers |
+| Flying | 28 | 88 | 0 | Airborne sortie, untargetable while flying |
 
 ---
 
@@ -410,7 +412,9 @@ A layout contains:
 }
 ```
 
-Secondary paths are always carved (visible on map previews), but enemies only use them when `getEffectiveWave() >= DUAL_SPAWN_WAVE` (15). Usage ramps gradually: ~6% at wave 15, increasing ~6.3% per wave, capping at 50% by wave 22.
+Secondary paths are always carved (visible on map previews), but enemies only use them when `getEffectiveWave() >= DUAL_SPAWN_WAVE` (15). Usage ramps gradually: ~8% at wave 16, increasing ~2% per wave, capping at 25%.
+
+**Secondary reinforcement bursts:** When all secondary-path enemies are dead but primary enemies remain, 2-3 reinforcement enemies spawn from secondary after 4s. Up to 3 bursts per wave.
 
 **Rules for waypoints:**
 - Consecutive waypoints MUST be axis-aligned (same x or same y) — no diagonals
@@ -458,6 +462,7 @@ Uses `localStorage` with `td_` prefix:
 | ` | Toggle admin mode |
 | K | Kill all enemies on screen |
 | W | Set wave (prompt) |
+| G | Add 1000 gold |
 | C | Clear wave debug log (confirm) |
 | R | Reset progress (confirm) |
 | D | Download wave debug log as CSV |
