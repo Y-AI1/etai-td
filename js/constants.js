@@ -639,9 +639,9 @@ export const ENEMY_TYPES = {
     },
     flying: {
         name: 'Flying',
-        baseHP: 25,
-        speed: 80,
-        reward: 8,
+        baseHP: 28,
+        speed: 88,
+        reward: 9,
         livesCost: 1,
         color: '#9b59b6',
         radius: 11,
