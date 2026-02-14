@@ -8,6 +8,8 @@ export class UI {
         // Cache DOM elements
         this.elWave = document.getElementById('wave-info');
         this.elLives = document.getElementById('lives-info');
+        this.elLivesFill = document.getElementById('lives-fill');
+        this.elLivesText = document.getElementById('lives-text');
         this.elGold = document.getElementById('gold-info');
         this.elTowerPanel = document.getElementById('tower-panel');
         this.elTowerInfo = document.getElementById('tower-info');
@@ -542,7 +544,9 @@ export class UI {
         } else {
             this.elWave.textContent = waveText;
         }
-        this.elLives.innerHTML = `&#9829; ${eco.lives}`;
+        this.elLivesText.innerHTML = `&#9829; ${eco.lives}`;
+        const livesPercent = Math.max(0, (eco.lives / 20) * 100);
+        this.elLivesFill.style.width = livesPercent + '%';
         this.elLives.classList.toggle('lives-critical', eco.lives <= 5 && eco.lives > 0);
         this.elGold.textContent = `\u{1FA99} ${eco.gold}`;
         // Toggle hero-active class for mobile controls (only shows on mobile when hero is active)

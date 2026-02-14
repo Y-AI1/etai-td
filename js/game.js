@@ -163,6 +163,7 @@ export class Game {
             this.achievements.set(`${this.selectedMapId}_best`, this.waves.currentWave);
         }
         this.audio.playGameOver();
+        this.ui.update();
         this.ui.showScreen('game-over');
     }
 
