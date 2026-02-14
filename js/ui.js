@@ -710,8 +710,6 @@ export class UI {
         if (upgradeCost !== null) {
             const canAfford = this.game.economy.canAfford(upgradeCost);
             html += `<button id="upgrade-btn" class="action-btn upgrade-btn${canAfford ? '' : ' disabled'}" title="Upgrade (U)">Upgrade $${upgradeCost}</button>`;
-        } else {
-            html += `<button class="action-btn disabled">MAX</button>`;
         }
 
         html += `

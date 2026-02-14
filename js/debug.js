@@ -56,7 +56,8 @@ export class WaveDebugger {
         this._resetWave();
         this.waveNum = game.waves.currentWave;
         this.worldHpMul = game.map.def ? game.map.def.worldHpMultiplier : 1;
-        this.waveHpScale = getWaveHPScale(this.waveNum);
+        const hpOffset = game.map.def ? game.map.def.startingWaveHP || 0 : 0;
+        this.waveHpScale = getWaveHPScale(this.waveNum + hpOffset);
         this.finalHpMul = this.worldHpMul * this.waveHpScale;
         this.startGold = game.economy.gold;
         this.startLives = game.economy.lives;

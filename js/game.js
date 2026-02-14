@@ -98,6 +98,12 @@ export class Game {
 
         this.economy.startReset();
 
+        // Per-map starting gold bonus for advanced worlds
+        const mapStartGold = MAP_DEFS[this.selectedMapId]?.startingGold;
+        if (mapStartGold) {
+            this.economy.gold = mapStartGold;
+        }
+
         // Pre-mark thresholds below starting unlocks so we don't announce pre-unlocked content
         this._triggeredThresholds = new Set();
         const startingUnlocks = MAP_DEFS[this.selectedMapId]?.startingUnlocks || 0;

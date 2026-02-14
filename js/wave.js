@@ -124,9 +124,11 @@ export class WaveManager {
             // Wave 6+: procedural generation
             def = this.generateWave(waveNum);
         }
-        // Append flying enemies: 1 at wave 17, scaling to 10 by wave 30
-        if (waveNum >= FLYING_START_WAVE) {
-            const flyCount = Math.min(10, 1 + Math.round((waveNum - FLYING_START_WAVE) * 9 / 13));
+        // Append flying enemies: offset by startingWaveHP so advanced maps get them earlier
+        const hpOffset = this.game?.map?.def?.startingWaveHP || 0;
+        const flyWave = waveNum + hpOffset;
+        if (flyWave >= FLYING_START_WAVE) {
+            const flyCount = Math.min(10, 1 + Math.round((flyWave - FLYING_START_WAVE) * 9 / 13));
             def.push({ type: 'flying', count: flyCount, interval: 0.8, delay: 0 });
         }
         return def;
@@ -192,7 +194,8 @@ export class WaveManager {
         }
 
         const mapMul = this.game.map.def.worldHpMultiplier || 1;
-        const hpScale = getWaveHPScale(this.currentWave) * mapMul * this.hpModifier;
+        const hpWave = this.currentWave + (this.game.map.def.startingWaveHP || 0);
+        const hpScale = getWaveHPScale(hpWave) * mapMul * this.hpModifier;
 
         if (this.spawning) {
             let allDone = true;

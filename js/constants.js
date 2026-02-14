@@ -143,9 +143,11 @@ export const MAP_DEFS = {
     splitcreek: {
         name: 'Split Creek',
         themeColor: '#d4a026',
-        worldHpMultiplier: 0.60,
+        worldHpMultiplier: 1.0,
         requiredRecord: 30,
         startingUnlocks: 30,
+        startingWaveHP: 5,
+        startingGold: 1000,
         environment: 'desert',
         description: 'The path forks midway — enemies randomly pick a branch.',
         layouts: [
@@ -265,9 +267,11 @@ export const MAP_DEFS = {
     gauntlet: {
         name: 'The Gauntlet',
         themeColor: '#c0392b',
-        worldHpMultiplier: 0.65,
+        worldHpMultiplier: 1.0,
         requiredRecord: 40,
         startingUnlocks: 50,
+        startingWaveHP: 15,
+        startingGold: 1000,
         environment: 'lava',
         description: 'A short direct path — enemies arrive fast, every tower counts.',
         layouts: [
@@ -640,9 +644,9 @@ export const ENEMY_TYPES = {
     },
     flying: {
         name: 'Flying',
-        baseHP: 28,
-        speed: 88,
-        reward: 9,
+        baseHP: 31,
+        speed: 97,
+        reward: 10,
         livesCost: 1,
         color: '#9b59b6',
         radius: 11,
