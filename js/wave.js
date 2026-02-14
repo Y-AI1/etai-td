@@ -1,4 +1,4 @@
-import { WAVES, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, DUAL_SPAWN_WAVE, GOLDRUSH_INTERVAL, SPEED_MAX, WAVE_GEN, STATE } from './constants.js';
+import { WAVES, WAVE_BONUS_BASE, WAVE_BONUS_PER, INTEREST_RATE, CANVAS_W, CANVAS_H, getWaveHPScale, WAVE_MODIFIERS, MODIFIER_START_WAVE, MODIFIER_CHANCE, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, DUAL_SPAWN_WAVE, FLYING_START_WAVE, GOLDRUSH_INTERVAL, SPEED_MAX, WAVE_GEN, STATE } from './constants.js';
 import { Economy } from './economy.js';
 
 export class WaveManager {
@@ -124,9 +124,9 @@ export class WaveManager {
             // Wave 6+: procedural generation
             def = this.generateWave(waveNum);
         }
-        // Append flying enemies: 1 at wave 15, scaling to 10 by wave 30
-        if (waveNum >= DUAL_SPAWN_WAVE) {
-            const flyCount = Math.min(10, 1 + Math.round((waveNum - DUAL_SPAWN_WAVE) * 9 / 15));
+        // Append flying enemies: 1 at wave 17, scaling to 10 by wave 30
+        if (waveNum >= FLYING_START_WAVE) {
+            const flyCount = Math.min(10, 1 + Math.round((waveNum - FLYING_START_WAVE) * 9 / 13));
             def.push({ type: 'flying', count: flyCount, interval: 0.8, delay: 0 });
         }
         return def;

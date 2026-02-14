@@ -547,6 +547,7 @@ export const HERO_STATS = {
 
 // ── Dual Spawn ────────────────────────────────────────────
 export const DUAL_SPAWN_WAVE = 15;
+export const FLYING_START_WAVE = 17;
 
 // ── Wave Generation Tuning ────────────────────────────────
 export const WAVE_GEN = {
