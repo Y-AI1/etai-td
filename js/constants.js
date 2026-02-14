@@ -569,7 +569,7 @@ export const WAVE_GEN = {
     COUNT_MULTIPLIER: 0.82,    // global enemy count scalar
     INTERVAL_BASE: 0.8,        // base spawn interval (seconds)
     INTERVAL_DECAY: 0.01,      // interval shrinks per wave
-    INTERVAL_MIN: 0.30,        // floor for spawn interval
+    INTERVAL_MIN: 0.22,        // floor for spawn interval
     INTERVAL_MULTI: { grunt: 1.0, runner: 1.3, tank: 0.8, healer: 1.0, boss: 0.8, swarm: 1.3, flying: 1.0 },
     GROUP_OVERLAP: 0.5,        // next group starts at this fraction of previous
     GROUP_GAP_MIN: 1.0,        // min gap between groups (seconds)
@@ -690,7 +690,7 @@ export const MAX_PARTICLES = 500;
 // ── HP Scaling ─────────────────────────────────────────────
 export function getWaveHPScale(wave) {
     // Wave 1≈1.10, Wave 10≈25.9, Wave 20≈134
-    return wave * Math.pow(1.10, wave);
+    return wave * Math.pow(1.11, wave);
 }
 
 // ── Wave Modifiers ────────────────────────────────────────

@@ -127,7 +127,7 @@ export class WaveManager {
         // Append flying enemies (per-map flyingStartWave, default FLYING_START_WAVE)
         const flyStart = this.game?.map?.def?.flyingStartWave ?? FLYING_START_WAVE;
         if (waveNum >= flyStart) {
-            const flyCount = Math.min(10, 1 + Math.round((waveNum - flyStart) * 9 / 13));
+            const flyCount = Math.min(20, 1 + Math.round((waveNum - flyStart) * 19 / 13));
             def.push({ type: 'flying', count: flyCount, interval: 0.8, delay: 0 });
         }
         return def;
