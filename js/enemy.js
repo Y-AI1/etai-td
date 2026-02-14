@@ -76,8 +76,8 @@ export class Enemy {
             this.x = lastWP.x;
             this.y = lastWP.y;
             // Pick a landing waypoint between 40-60% of path
-            const minIdx = Math.floor(path.length * 0.4);
-            const maxIdx = Math.floor(path.length * 0.6);
+            const minIdx = Math.floor(path.length * 0.3);
+            const maxIdx = Math.floor(path.length * 0.5);
             this.landingIndex = minIdx + Math.floor(Math.random() * (maxIdx - minIdx + 1));
             this.flyTarget = { x: path[this.landingIndex].x, y: path[this.landingIndex].y };
             // Store starting position for altitude calculation

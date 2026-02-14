@@ -659,7 +659,7 @@ export const ENEMY_TYPES = {
     },
     megaboss: {
         name: 'Mega Boss',
-        baseHP: 720,
+        baseHP: 612,
         speed: 58,
         reward: 80,
         livesCost: 5,
