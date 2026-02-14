@@ -167,8 +167,8 @@ export class WaveManager {
             runningDelay += count * interval * W.GROUP_OVERLAP + gap;
         }
 
-        // Boss every 5 waves — arrives after all groups finish
-        if (waveNum % 5 === 0) {
+        // Boss every 5 waves — arrives after all groups finish (replaced by megaboss at 25+)
+        if (waveNum % 5 === 0 && waveNum < 25) {
             const bossCount = Math.floor(waveNum / 10) + 1;
             groups.push({
                 type: 'boss',
