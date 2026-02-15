@@ -549,6 +549,8 @@ export const HERO_STATS = {
     stunRadius: 3.0,  stunDuration: 1.5,  stunCooldown: 15.0,
     // E: Gold Magnet
     magnetRadius: 4.0,  magnetDuration: 8.0,  magnetMultiplier: 2,  magnetCooldown: 20.0,
+    // 1: Execute (instant-kill boss/megaboss)
+    executeRange: 15.0,  executeCooldown: 120.0,
 };
 
 // ── Dual Spawn ────────────────────────────────────────────

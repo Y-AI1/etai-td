@@ -312,6 +312,14 @@ export class Audio {
         this.playTone('triangle', 800, 1200, 0.1, 0.08);
     }
 
+    playHeroExecute() {
+        // Dramatic low boom + rising power tone
+        this.playTone('sawtooth', 60, 20, 0.5, 0.25);
+        this.playTone('sine', 200, 800, 0.4, 0.2);
+        this.playTone('square', 100, 40, 0.3, 0.15);
+        this.playNoise(0.3, 0.12);
+    }
+
     playAchievement() {
         this.ensureContext();
         if (!this.ctx || this.muted) return;

@@ -115,6 +115,14 @@ export class InputHandler {
                 this.game.hero.activateMagnet();
             }, { passive: false });
         }
+
+        const executeBtn = document.getElementById('execute-btn');
+        if (executeBtn) {
+            executeBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.game.hero.activateExecute();
+            }, { passive: false });
+        }
     }
 
     getCanvasPos(e) {
@@ -312,6 +320,11 @@ export class InputHandler {
             // E: Gold Magnet
             if (keyLower === 'e') {
                 this.game.hero.activateMagnet();
+                return;
+            }
+            // Z: Execute (boss kill)
+            if (keyLower === 'z') {
+                this.game.hero.activateExecute();
                 return;
             }
         }

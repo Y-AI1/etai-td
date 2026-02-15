@@ -96,7 +96,17 @@ Press backtick (`` ` ``) to toggle the admin panel with real-time DPS/efficiency
 
 ## Hero Unit (Wave 14+)
 
-WASD-controlled hero spawns when `getEffectiveWave() >= 14` (unlockWave in HERO_STATS). Auto-attacks nearest enemy (15 dmg, 3.5 range, 2/s). Two abilities: Q = AoE stun (3-cell radius, 1.5s, 15s cooldown), E = gold magnet (2x kill gold in 4-cell radius, 8s duration, 20s cooldown). Takes contact damage from enemies (type-dependent multipliers). Dies at 0 HP, respawns after 5s. Managed by `hero.js`, updated after enemies/before towers in game loop.
+WASD-controlled hero spawns when `getEffectiveWave() >= 14` (unlockWave in HERO_STATS). Auto-attacks nearest enemy (15 dmg, 3.5 range, 2/s). Three abilities: Q = AoE stun (3-cell radius, 1.5s, 15s cooldown), E = gold magnet (2x kill gold in 4-cell radius, 8s duration, 20s cooldown), Z = execute (instant-kill nearest boss/megaboss within 15-cell range, 2min cooldown). Takes contact damage from enemies (type-dependent multipliers). Dies at 0 HP, respawns after 5s. Managed by `hero.js`, updated after enemies/before towers in game loop.
+
+### Execute Ability (Z key)
+- Instantly kills the nearest boss or megaboss (not flying) within 15 grid cells
+- 0.8s animation: 0-0.6s charge (hero grows 1x→3x, red/gold color), 0.6s strike, 0.6-0.8s shrink
+- 120s (2 minute) cooldown — strategic decision
+- No target in range → "NO TARGET" text, cooldown not consumed
+- Target dies mid-animation → partial cooldown refund (30s), explosion at hero position
+- Visual: hero scales up, red/gold pulsing glow rings, execute light in PostFX
+- Strike effects: double explosion, shake(15), flash, shockwave, chromatic aberration
+- Cooldown icon drawn as 3rd indicator (Z) below hero alongside Q and E
 
 ## Flying Enemy (Wave 15+)
 

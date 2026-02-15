@@ -420,10 +420,15 @@ export class Game {
             pfx.addLight(p.x, p.y, r, g, b, rad, int);
         }
 
-        // Hero — cyan glow + gold magnet aura
+        // Hero — cyan glow + gold magnet aura + execute glow
         const hero = this.hero;
         if (hero.active && hero.alive) {
-            pfx.addLight(hero.x, hero.y, 0, 0.9, 1.0, 0.08, 0.6);
+            if (hero.executeAnimTimer >= 0 && hero.executeAnimTimer < 0.6) {
+                const t = hero.executeAnimTimer / 0.6;
+                pfx.addLight(hero.x, hero.y, 1.0, 0.2 + t * 0.6, 0, 0.10 + t * 0.25, 0.8 + t * 1.5);
+            } else {
+                pfx.addLight(hero.x, hero.y, 0, 0.9, 1.0, 0.08, 0.6);
+            }
             if (hero.magnetActive) {
                 pfx.addLight(hero.x, hero.y, 1.0, 0.84, 0, 0.15, 0.4);
             }

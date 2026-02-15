@@ -227,6 +227,7 @@ export class Renderer {
 
     // ── Hero Drawing ──────────────────────────────────────────
     getHeroState(hero) {
+        if (hero.executeAnimTimer >= 0) return 'execute';
         const stunReady = hero.stunCooldown <= 0;
         const magnetReady = hero.magnetCooldown <= 0;
         if (stunReady && magnetReady) return 'both';
@@ -238,6 +239,7 @@ export class Renderer {
     // State-driven colors: body, glow ring, outline
     getHeroColors(state) {
         switch (state) {
+            case 'execute':  return { body: '#ff2200', glow: '#ffd700', outline: '#aa0000' }; // red/gold — executing
             case 'both':     return { body: '#00e5ff', glow: '#00e5ff', outline: '#005f6f' }; // cyan — full power
             case 'magnet':   return { body: '#ffd700', glow: '#ffd700', outline: '#7a6500' }; // gold — magnet ready
             case 'stun':     return { body: '#ffffff', glow: '#ffffff', outline: '#888888' }; // white — stun ready
@@ -276,13 +278,61 @@ export class Renderer {
         const colors = this.getHeroColors(state);
         const isFlashing = hero.damageFlashTimer > 0 || hero.stunFlashTimer > 0;
 
+        // Execute animation — scale hero and add effects
+        let scale = 1;
+        if (hero.executeAnimTimer >= 0) {
+            const t = hero.executeAnimTimer;
+            if (t < 0.6) {
+                // Charge phase: grow 1x → 6x
+                scale = 1 + 5 * (t / 0.6);
+            } else {
+                // Shrink phase: 6x → 1x
+                const shrinkT = (t - 0.6) / 0.2;
+                scale = 6 - 5 * shrinkT;
+            }
+        }
+
         ctx.save();
 
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.beginPath();
-        ctx.ellipse(x, y + r * 0.7, r * 0.8, r * 0.3, 0, 0, Math.PI * 2);
+        ctx.ellipse(x, y + r * 0.7, r * 0.8 * scale, r * 0.3 * scale, 0, 0, Math.PI * 2);
         ctx.fill();
+
+        // Execute glow rings (massive expanding, pulsing)
+        if (hero.executeAnimTimer >= 0 && hero.executeAnimTimer < 0.6) {
+            const t = hero.executeAnimTimer / 0.6;
+            const pulse = 0.7 + Math.sin(Date.now() * 0.02) * 0.3;
+            const glowR = r * scale * 2.5 * pulse;
+            // Outer gold ring
+            ctx.strokeStyle = `rgba(255, 215, 0, ${0.7 * (1 - t * 0.2)})`;
+            ctx.lineWidth = 4 + t * 6;
+            ctx.beginPath();
+            ctx.arc(x, y, glowR, 0, Math.PI * 2);
+            ctx.stroke();
+            // Mid red ring
+            ctx.strokeStyle = `rgba(255, 34, 0, ${0.5 * pulse})`;
+            ctx.lineWidth = 6 + t * 4;
+            ctx.beginPath();
+            ctx.arc(x, y, glowR * 0.7, 0, Math.PI * 2);
+            ctx.stroke();
+            // Inner white-hot ring
+            ctx.strokeStyle = `rgba(255, 255, 200, ${0.4 * pulse * t})`;
+            ctx.lineWidth = 3 + t * 5;
+            ctx.beginPath();
+            ctx.arc(x, y, glowR * 0.4, 0, Math.PI * 2);
+            ctx.stroke();
+            // Radial fill glow
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+            grad.addColorStop(0, `rgba(255, 200, 50, ${0.3 * t})`);
+            grad.addColorStop(0.5, `rgba(255, 50, 0, ${0.15 * t})`);
+            grad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, glowR, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         // Magnet aura (active effect, independent of state color)
         if (hero.magnetActive) {
@@ -305,13 +355,14 @@ export class Renderer {
         ctx.lineWidth = 2;
         ctx.globalAlpha = state === 'cooldown' ? 0.2 : (0.4 + Math.sin(Date.now() * 0.003) * 0.15);
         ctx.beginPath();
-        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.arc(x, y, (r + 4) * scale, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
 
         // Body — knight/warrior rotated to turretAngle
         ctx.translate(x, y);
         ctx.rotate(hero.turretAngle);
+        if (scale !== 1) ctx.scale(scale, scale);
 
         // Cape (flowing behind the hero, animated)
         const capeWave = Math.sin(Date.now() * 0.008) * r * 0.15;
@@ -402,12 +453,10 @@ export class Renderer {
         const iconR = 7;
         const gap = 20;
 
-        // Q — Stun (left)
-        this.drawCooldownArc(ctx, x - gap / 2, y, iconR, hero.stunCooldown, HERO_STATS.stunCooldown, '#ffffff', 'Q');
-
-        // E — Magnet (right)
-        const magnetColor = hero.magnetActive ? '#ffd700' : '#ffd700';
-        this.drawCooldownArc(ctx, x + gap / 2, y, iconR, hero.magnetCooldown, HERO_STATS.magnetCooldown, magnetColor, 'E');
+        // 3 icons centered: Q — E — 1
+        this.drawCooldownArc(ctx, x - gap, y, iconR, hero.stunCooldown, HERO_STATS.stunCooldown, '#ffffff', 'Q');
+        this.drawCooldownArc(ctx, x, y, iconR, hero.magnetCooldown, HERO_STATS.magnetCooldown, '#ffd700', 'E');
+        this.drawCooldownArc(ctx, x + gap, y, iconR, hero.executeCooldown, HERO_STATS.executeCooldown, '#ff4400', 'Z');
     }
 
     drawCooldownArc(ctx, cx, cy, r, cooldown, maxCooldown, color, label) {

@@ -44,6 +44,11 @@ export class Hero {
         this.magnetCooldown = 0;
         this.magnetActive = false;
         this.magnetTimer = 0;
+
+        // 1: Execute
+        this.executeCooldown = 0;
+        this.executeAnimTimer = -1; // -1 = inactive
+        this.executeTarget = null;
     }
 
     init(map) {
@@ -83,6 +88,9 @@ export class Hero {
         this.magnetCooldown = 0;
         this.magnetActive = false;
         this.magnetTimer = 0;
+        this.executeCooldown = 0;
+        this.executeAnimTimer = -1;
+        this.executeTarget = null;
 
         this.clearMovement();
     }
@@ -102,6 +110,9 @@ export class Hero {
         this.magnetCooldown = 0;
         this.magnetActive = false;
         this.magnetTimer = 0;
+        this.executeCooldown = 0;
+        this.executeAnimTimer = -1;
+        this.executeTarget = null;
     }
 
     clearMovement() {
@@ -117,8 +128,22 @@ export class Hero {
         // Cooldown timers (always tick, even when dead)
         if (this.stunCooldown > 0) this.stunCooldown -= dt;
         if (this.magnetCooldown > 0) this.magnetCooldown -= dt;
+        if (this.executeCooldown > 0) this.executeCooldown -= dt;
         if (this.stunFlashTimer > 0) this.stunFlashTimer -= dt;
         if (this.damageFlashTimer > 0) this.damageFlashTimer -= dt;
+
+        // Execute animation
+        if (this.executeAnimTimer >= 0) {
+            this.executeAnimTimer += dt;
+            // Strike at 0.6s
+            if (this.executeAnimTimer >= 0.6 && this.executeTarget) {
+                this.executeStrike();
+            }
+            // Animation complete at 0.8s
+            if (this.executeAnimTimer >= 0.8) {
+                this.executeAnimTimer = -1;
+            }
+        }
 
         // Magnet duration
         if (this.magnetActive) {
@@ -322,6 +347,68 @@ export class Hero {
         this.game.particles.spawnAuraPulse(this.x, this.y, HERO_STATS.magnetRadius * CELL, '#ffd700');
         this.game.audio.playHeroMagnet();
         this.game.postfx?.addFlashLight(this.x, this.y, 1.0, 0.84, 0, 0.12, 1.0, 0.5);
+    }
+
+    activateExecute() {
+        if (!this.alive || !this.active) return;
+        if (this.executeCooldown > 0) return;
+        if (this.executeAnimTimer >= 0) return; // already animating
+
+        // Find nearest boss/megaboss in range
+        const rangePx = HERO_STATS.executeRange * CELL;
+        let closest = null;
+        let closestDist = Infinity;
+
+        for (const e of this.game.enemies.enemies) {
+            if (!e.alive || e.flying) continue;
+            if (e.type !== 'boss' && e.type !== 'megaboss') continue;
+            const d = distance(this, e);
+            if (d <= rangePx && d < closestDist) {
+                closestDist = d;
+                closest = e;
+            }
+        }
+
+        if (!closest) {
+            this.game.particles.spawnBigFloatingText(this.x, this.y - 25, 'NO TARGET', '#ff4444');
+            return;
+        }
+
+        // Start execute animation
+        this.executeTarget = closest;
+        this.executeAnimTimer = 0;
+        this.executeCooldown = HERO_STATS.executeCooldown;
+        this.game.audio.playHeroExecute();
+    }
+
+    executeStrike() {
+        const target = this.executeTarget;
+        this.executeTarget = null; // clear so we don't strike twice
+
+        if (!target || !target.alive) {
+            // Target died mid-animation — partial cooldown refund (30s)
+            this.executeCooldown = 30;
+            this.game.particles.spawnExplosion(this.x, this.y, '#ff4444');
+            return;
+        }
+
+        // Instant kill
+        target.hp = 0;
+        target.alive = false;
+
+        // Visual effects at target position — massive
+        this.game.particles.spawnExplosion(target.x, target.y, '#ffd700');
+        this.game.particles.spawnExplosion(target.x, target.y, '#ff4444');
+        this.game.particles.spawnExplosion(target.x, target.y, '#ffffff');
+        this.game.particles.spawnExplosion(this.x, this.y, '#ffd700');
+        this.game.particles.spawnBigFloatingText(target.x, target.y - 40, 'EXECUTED!', '#ffd700');
+        this.game.triggerShake(20, 0.8);
+        this.game.postfx?.flash(0.5, 0.5);
+        this.game.postfx?.shockwave(target.x / CANVAS_W, target.y / CANVAS_H, 1.5);
+        this.game.postfx?.shockwave(this.x / CANVAS_W, this.y / CANVAS_H, 0.8);
+        this.game.postfx?.aberration(1.2, 0.4);
+        this.game.postfx?.addFlashLight(target.x, target.y, 1.0, 0.8, 0, 0.3, 3.0, 0.8);
+        this.game.postfx?.addFlashLight(this.x, this.y, 1.0, 0.2, 0, 0.2, 2.0, 0.5);
     }
 
     getGoldMultiplier(ex, ey) {
