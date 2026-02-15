@@ -501,9 +501,9 @@ export const TOWER_TYPES = {
         missile: true,
         unlockWave: 20,
         levels: [
-            { damage: 80, range: 7.0, fireRate: 2.5, projSpeed: 300, splashRadius: 1.2, critChance: 0.12, critMulti: 2.5 },
-            { damage: 120, range: 8.0, fireRate: 2.2, projSpeed: 320, splashRadius: 1.5, critChance: 0.16, critMulti: 2.8, upgradeCost: 200 },
-            { damage: 180, range: 9.0, fireRate: 1.8, projSpeed: 350, splashRadius: 1.8, critChance: 0.20, critMulti: 3.2, upgradeCost: 300 },
+            { damage: 88, range: 7.0, fireRate: 2.5, projSpeed: 300, splashRadius: 1.2, critChance: 0.12, critMulti: 2.5 },
+            { damage: 132, range: 8.0, fireRate: 2.2, projSpeed: 320, splashRadius: 1.5, critChance: 0.16, critMulti: 2.8, upgradeCost: 200 },
+            { damage: 198, range: 9.0, fireRate: 1.8, projSpeed: 350, splashRadius: 1.8, critChance: 0.20, critMulti: 3.2, upgradeCost: 300 },
         ],
     },
     pulsecannon: {
@@ -669,7 +669,7 @@ export const ENEMY_TYPES = {
     },
     megaboss: {
         name: 'Mega Boss',
-        baseHP: 413,
+        baseHP: 392,
         speed: 58,
         reward: 80,
         livesCost: 5,
