@@ -3,6 +3,10 @@ import { Scene3D } from './scene3d.js';
 import { createTowerMesh } from './meshes/towers.js';
 import { createEnemyMesh } from './meshes/enemies.js';
 
+// Compensate for tilted camera: 3D height shifts objects up on screen.
+// Offset Z forward so turret appears centered in its cell.
+const _TAN_TILT = Math.tan(25 * Math.PI / 180); // must match scene3d.js TILT_DEG
+
 /**
  * 3D renderer using Three.js.
  * Phase 1: terrain ground plane.
@@ -101,6 +105,12 @@ export class Renderer3D {
                 // Scale: keep cell footprint, slight height boost
                 entry.group.scale.set(1.0, 1.1, 1.0);
                 entry.group.position.set(tower.x, 0, tower.y);
+                // Shift turret Z forward to compensate for height-induced upward shift on tilted camera
+                // (base/ring stay centered on the 2D base square)
+                entry.turret.position.x = 0;
+                entry.turret.position.y = 0;
+                const zOff = CELL * 0.25 * 1.1 * _TAN_TILT;
+                entry.turret.position.z = zOff;
                 scene.add(entry.group);
                 meshMap.set(tower.id, entry);
             }
@@ -111,12 +121,13 @@ export class Renderer3D {
             entry.turret.rotation.y = -tower.turretAngle + Math.PI / 2;
 
             // Recoil: shift turret backward along facing direction
+            // Base Z offset compensates for tilt-induced upward shift
+            const baseZOff = CELL * 0.25 * 1.1 * _TAN_TILT;
             if (tower.recoilTimer > 0) {
                 const recoilAmount = (tower.recoilTimer / 0.12) * 8;
-                // Turret local Z is forward after rotation, so shift in -Z (local)
-                entry.turret.position.z = -recoilAmount;
+                entry.turret.position.z = baseZOff - recoilAmount;
             } else {
-                entry.turret.position.z = 0;
+                entry.turret.position.z = baseZOff;
             }
         }
 

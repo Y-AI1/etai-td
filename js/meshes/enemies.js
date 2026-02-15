@@ -47,7 +47,7 @@ function gruntBody(color, r) {
     const g = getGeo();
     const body = new THREE.Group();
     body.add(m(g.dodeca, mat(color), {
-        sx: r, sy: H * 0.6, sz: r, py: H * 0.35,
+        sx: r * 0.75, sy: H * 0.5, sz: r * 0.75, py: H * 0.3,
     }));
     return body;
 }
@@ -70,11 +70,11 @@ function tankBody(color, r) {
     const body = new THREE.Group();
     // Chunky box
     body.add(m(g.box, mat(color, { roughness: 0.8, metalness: 0.4 }), {
-        sx: r * 1.6, sy: H * 0.7, sz: r * 1.6, py: H * 0.35,
+        sx: r * 1.2, sy: H * 0.55, sz: r * 1.2, py: H * 0.3,
     }));
     // Armor plate
     body.add(m(g.box, mat(0x999999, { metalness: 0.2 }), {
-        sx: r * 1.2, sy: H * 0.15, sz: r * 1.2, py: H * 0.75,
+        sx: r * 0.9, sy: H * 0.12, sz: r * 0.9, py: H * 0.6,
     }));
     return body;
 }
