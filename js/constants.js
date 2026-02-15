@@ -448,9 +448,9 @@ export const TOWER_TYPES = {
         forkChain: true,
         unlockWave: 25,
         levels: [
-            { damage: 18, range: 4.0, fireRate: 1.1, projSpeed: 600, forkCount: 4, forkDepth: 2, chainRange: 2.5, overcharge: 0.10, shockChance: 0.15, shockDuration: 0.3 },
-            { damage: 28, range: 4.5, fireRate: 0.9, projSpeed: 650, forkCount: 6, forkDepth: 2, chainRange: 3.0, overcharge: 0.10, shockChance: 0.20, shockDuration: 0.3, upgradeCost: 150 },
-            { damage: 42, range: 5.0, fireRate: 0.75, projSpeed: 700, forkCount: 8, forkDepth: 3, chainRange: 3.5, overcharge: 0.12, shockChance: 0.25, shockDuration: 0.4, upgradeCost: 250 },
+            { damage: 20, range: 4.0, fireRate: 1.1, projSpeed: 600, forkCount: 4, forkDepth: 2, chainRange: 2.5, overcharge: 0.10, shockChance: 0.15, shockDuration: 0.3 },
+            { damage: 31, range: 4.5, fireRate: 0.9, projSpeed: 650, forkCount: 6, forkDepth: 2, chainRange: 3.0, overcharge: 0.10, shockChance: 0.20, shockDuration: 0.3, upgradeCost: 150 },
+            { damage: 46, range: 5.0, fireRate: 0.75, projSpeed: 700, forkCount: 8, forkDepth: 3, chainRange: 3.5, overcharge: 0.12, shockChance: 0.25, shockDuration: 0.4, upgradeCost: 250 },
         ],
     },
     cannon: {
