@@ -83,6 +83,12 @@ export class Game {
                 this._apply3DVisibility();
                 this.renderer3d.drawTerrain();
             }
+            // Fire-and-forget GLTF tower model loading
+            import('./meshes/gltf-loader.js').then(loader => {
+                loader.loadAllTowerModels().then(loaded => {
+                    if (loaded && this.renderer3d) this.renderer3d.drawTerrain();
+                });
+            }).catch(() => {}); // silent — procedural fallback is fine
         } catch (e) {
             console.warn('Three.js 3D renderer unavailable:', e.message);
         }

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CELL, TOWER_TYPES } from '../constants.js';
+import { isLoaded, hasModel, getModelClone } from './gltf-loader.js';
 
 const H = CELL * 0.55; // base height unit
 
@@ -298,27 +299,78 @@ const TURRET_FACTORY = {
     pulsecannon: pulsecannonTurret,
 };
 
+// ── GLTF tower creation ───────────────────────────────────────
+
+function createTowerFromGLTF(type, level) {
+    const def = TOWER_TYPES[type];
+    if (!def) return null;
+
+    const clone = getModelClone(type);
+    if (!clone) return null;
+
+    const color = new THREE.Color(def.color);
+    const group = new THREE.Group();
+    const maxed = level >= 2;
+
+    // Try to find named "Turret" child; if not found, treat whole model as turret
+    let turret = null;
+    let base = new THREE.Group();
+    clone.traverse(child => {
+        if (child.name === 'Turret' && !turret) turret = child;
+    });
+
+    if (turret) {
+        // Remove turret from clone, clone becomes base
+        turret.parent?.remove(turret);
+        base = clone;
+    } else {
+        turret = clone;
+    }
+
+    // Colorize all materials with tower's color + emissive self-glow
+    const tintGroup = (grp) => {
+        grp.traverse(child => {
+            if (child.isMesh && child.material) {
+                child.material.color.lerp(color, 0.4);
+                child.material.emissive = color.clone();
+                child.material.emissiveIntensity = maxed ? 0.35 : 0.15;
+            }
+        });
+    };
+    tintGroup(turret);
+    tintGroup(base);
+
+    group.add(base);
+    group.add(turret);
+
+    return { group, turret, base };
+}
+
 /**
  * Creates a complete tower mesh group for the given tower type and level.
+ * Uses GLTF model if available, otherwise procedural geometry.
  * Returns { group, turret, base } for easy access.
  */
 export function createTowerMesh(type, level) {
     const def = TOWER_TYPES[type];
     if (!def) return null;
 
+    // Try GLTF first
+    if (isLoaded() && hasModel(type)) {
+        const result = createTowerFromGLTF(type, level);
+        if (result) return result;
+    }
+
+    // Procedural fallback
     const color = def.color;
     const group = new THREE.Group();
-
-    // Base platform
-    const base = createBase(color, level);
-    group.add(base);
 
     // Turret (type-specific)
     const factory = TURRET_FACTORY[type];
     const turret = factory ? factory(color) : arrowTurret(color);
     group.add(turret);
 
-    return { group, turret, base };
+    return { group, turret, base: group };
 }
 
 /**

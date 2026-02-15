@@ -233,16 +233,17 @@ export class Renderer3D {
 
             entry.group.position.set(e.x, altitude + bob, e.y);
 
-            // Shadow stays at ground level, offset from body
-            entry.shadow.position.y = -altitude - bob + 0.5;
-            // Flying shadow is smaller/more transparent
-            if (e.flying) {
-                const shadowScale = 0.6 + 0.4 * (1 - Math.sin(e.flyProgress * Math.PI));
-                const r = (entry.type === e.type) ? (CELL * 0.2) : 1;
-                entry.shadow.material.opacity = 0.12;
-                entry.shadow.scale.setScalar(r * shadowScale);
-            } else {
-                entry.shadow.material.opacity = 0.25;
+            // Shadow (if present)
+            if (entry.shadow) {
+                entry.shadow.position.y = -altitude - bob + 0.5;
+                if (e.flying) {
+                    const shadowScale = 0.6 + 0.4 * (1 - Math.sin(e.flyProgress * Math.PI));
+                    const r = (entry.type === e.type) ? (CELL * 0.2) : 1;
+                    entry.shadow.material.opacity = 0.12;
+                    entry.shadow.scale.setScalar(r * shadowScale);
+                } else {
+                    entry.shadow.material.opacity = 0.25;
+                }
             }
 
             // Death animation: scale down + spin
@@ -255,15 +256,17 @@ export class Renderer3D {
                         if (!child.material.transparent) {
                             child.material.transparent = true;
                         }
-                        child.material.opacity = 1 - deathT;
+                        const base = child.material.userData?.baseOpacity ?? 1;
+                        child.material.opacity = base * (1 - deathT);
                     }
                 });
             } else {
                 entry.body.scale.setScalar(1);
                 entry.body.rotation.y = -e.angle + Math.PI / 2;
-                // Ensure opacity is restored for reuse
+                // Ensure opacity is restored — skip persistently-transparent materials
                 entry.body.traverse(child => {
-                    if (child.isMesh && child.material && child.material.transparent) {
+                    if (child.isMesh && child.material && child.material.transparent
+                        && !child.material.userData?.persistTransparent) {
                         child.material.opacity = 1;
                         child.material.transparent = false;
                     }
@@ -593,10 +596,12 @@ export class Renderer3D {
     }
 
     _disposeMeshGroup(group) {
+        const isGLTF = group.userData?.isGLTF;
         group.traverse(child => {
             if (child.isMesh) {
-                // Only dispose materials — geometries are shared/cached
                 child.material?.dispose();
+                // GLTF clones own their geometry (not shared cache)
+                if (isGLTF && child.geometry) child.geometry.dispose();
             }
         });
     }
