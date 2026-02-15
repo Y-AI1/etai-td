@@ -636,7 +636,7 @@ export const ENEMY_TYPES = {
         reward: 42,
         livesCost: 5,
         color: '#8e44ad',
-        radius: 18,
+        radius: 24,
         armor: 0.20,
     },
     swarm: {
@@ -676,7 +676,7 @@ export const ENEMY_TYPES = {
         reward: 80,
         livesCost: 5,
         color: '#8b0000',
-        radius: 28,
+        radius: 34,
         armor: 0.25,
     },
 };
