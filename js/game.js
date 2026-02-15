@@ -66,7 +66,7 @@ export class Game {
 
         // 3D renderer (Three.js) — loaded dynamically so CDN failure doesn't break 2D game
         this.renderer3d = null;
-        this.use3D = false;
+        this.use3D = true;
         this._init3D(canvases);
 
         // Initial terrain render
@@ -74,15 +74,13 @@ export class Game {
     }
 
     async _init3D(canvases) {
-        if (!canvases.three) return;
+        if (!canvases.three) { this._fallback2D(); return; }
         try {
             const { Renderer3D } = await import('./renderer3d.js');
             this.renderer3d = new Renderer3D(canvases, this);
-            if (localStorage.getItem('td_use3d') === '1') {
-                this.use3D = true;
-                this._apply3DVisibility();
-                this.renderer3d.drawTerrain();
-            }
+            this.use3D = true;
+            this._apply3DVisibility();
+            this.renderer3d.drawTerrain();
             // Fire-and-forget GLTF tower model loading
             import('./meshes/gltf-loader.js').then(loader => {
                 loader.loadAllTowerModels().then(loaded => {
@@ -91,7 +89,15 @@ export class Game {
             }).catch(() => {}); // silent — procedural fallback is fine
         } catch (e) {
             console.warn('Three.js 3D renderer unavailable:', e.message);
+            this._fallback2D();
         }
+    }
+
+    /** Restore 2D visibility when Three.js is unavailable */
+    _fallback2D() {
+        this.use3D = false;
+        this._canvases.terrain.style.visibility = '';
+        this.refreshTerrain();
     }
 
     /** Call instead of renderer.drawTerrain() to keep both renderers in sync */

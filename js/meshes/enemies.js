@@ -252,11 +252,11 @@ function gruntBody(color, r) {
 
     // Stocky warrior golem body (LatheGeometry)
     body.add(m(tg.body, mat(color), {
-        sx: r * 0.9, sy: H * 0.55, sz: r * 0.9, py: H * 0.02,
+        sx: r * 1.05, sy: H * 0.6, sz: r * 1.05, py: H * 0.02,
     }));
     // Shield plate on back
     body.add(m(g.box, mat(color, { roughness: 0.7, metalness: 0.3, emissiveIntensity: 0.1 }), {
-        sx: r * 0.55, sy: H * 0.25, sz: 2, py: H * 0.22, pz: r * 0.5,
+        sx: r * 0.65, sy: H * 0.28, sz: 2, py: H * 0.24, pz: r * 0.55,
     }));
     return body;
 }
@@ -268,17 +268,17 @@ function runnerBody(color, r) {
 
     // Sleek teardrop body
     body.add(m(tg.body, mat(color), {
-        sx: r * 0.7, sy: H * 0.5, sz: r * 0.7, py: H * 0.02,
+        sx: r * 1.0, sy: H * 0.55, sz: r * 1.0, py: H * 0.02,
     }));
     // Swept-back fins (directional cues)
     const finMat = mat(color, { roughness: 0.5, metalness: 0.2, emissiveIntensity: 0.15 });
     body.add(m(g.box, finMat, {
-        sx: 1.5, sy: H * 0.12, sz: r * 0.5,
-        px: r * 0.4, py: H * 0.18, pz: r * 0.2, ry: 0.3,
+        sx: 2, sy: H * 0.14, sz: r * 0.6,
+        px: r * 0.55, py: H * 0.2, pz: r * 0.25, ry: 0.3,
     }));
     body.add(m(g.box, finMat.clone(), {
-        sx: 1.5, sy: H * 0.12, sz: r * 0.5,
-        px: -r * 0.4, py: H * 0.18, pz: r * 0.2, ry: -0.3,
+        sx: 2, sy: H * 0.14, sz: r * 0.6,
+        px: -r * 0.55, py: H * 0.2, pz: r * 0.25, ry: -0.3,
     }));
     return body;
 }
@@ -293,24 +293,24 @@ function tankBody(color, r) {
 
     // Armored dome hull (LatheGeometry)
     body.add(m(tg.hull, armorMat, {
-        sx: r * 0.9, sy: H * 0.4, sz: r * 0.85, py: H * 0.12,
+        sx: r * 0.75, sy: H * 0.35, sz: r * 0.7, py: H * 0.1,
     }));
     // Beveled tracks (ExtrudeGeometry)
     body.add(m(tg.track, darkMat, {
-        sx: r * 0.3, sy: H * 0.18, sz: r * 1.3,
-        px: -r * 0.55, py: H * 0.09,
+        sx: r * 0.25, sy: H * 0.15, sz: r * 1.1,
+        px: -r * 0.45, py: H * 0.07,
     }));
     body.add(m(tg.track, darkMat.clone(), {
-        sx: r * 0.3, sy: H * 0.18, sz: r * 1.3,
-        px: r * 0.55, py: H * 0.09,
+        sx: r * 0.25, sy: H * 0.15, sz: r * 1.1,
+        px: r * 0.45, py: H * 0.07,
     }));
     // Turret dome on top
     body.add(m(g.cyl, metalMat, {
-        sx: r * 0.4, sy: H * 0.15, sz: r * 0.4, py: H * 0.42,
+        sx: r * 0.33, sy: H * 0.13, sz: r * 0.33, py: H * 0.36,
     }));
     // Barrel
     body.add(m(g.cyl, metalMat.clone(), {
-        sx: 2.5, sy: r * 0.7, sz: 2.5, py: H * 0.42, pz: -r * 0.5,
+        sx: 2, sy: r * 0.6, sz: 2, py: H * 0.36, pz: -r * 0.42,
         rx: Math.PI / 2,
     }));
     return body;
@@ -366,18 +366,18 @@ function swarmBody(color, r) {
 
     // Head (front capsule)
     body.add(m(g.capsule, bugMat, {
-        sx: r * 0.3, sy: r * 0.15, sz: r * 0.3,
-        py: H * 0.2, pz: -r * 0.35,
+        sx: r * 0.45, sy: r * 0.25, sz: r * 0.45,
+        py: H * 0.22, pz: -r * 0.45,
     }));
     // Thorax (middle capsule)
     body.add(m(g.capsule, bugMat.clone(), {
-        sx: r * 0.35, sy: r * 0.2, sz: r * 0.35,
-        py: H * 0.2,
+        sx: r * 0.55, sy: r * 0.3, sz: r * 0.55,
+        py: H * 0.22,
     }));
     // Abdomen (larger rear capsule)
     body.add(m(g.capsule, bugMat.clone(), {
-        sx: r * 0.4, sy: r * 0.25, sz: r * 0.4,
-        py: H * 0.2, pz: r * 0.4,
+        sx: r * 0.6, sy: r * 0.35, sz: r * 0.6,
+        py: H * 0.22, pz: r * 0.5,
     }));
     // Translucent wings (angled boxes)
     const wingMat = mat(color, {
@@ -387,25 +387,25 @@ function swarmBody(color, r) {
     wingMat.userData.persistTransparent = true;
     wingMat.userData.baseOpacity = 0.45;
     body.add(m(g.box, wingMat, {
-        sx: r * 1.1, sy: 0.5, sz: r * 0.4,
-        px: r * 0.3, py: H * 0.32, rz: 0.2,
+        sx: r * 1.6, sy: 0.5, sz: r * 0.5,
+        px: r * 0.4, py: H * 0.35, rz: 0.2,
     }));
     const wingMat2 = wingMat.clone();
     wingMat2.userData = { persistTransparent: true, baseOpacity: 0.45 };
     body.add(m(g.box, wingMat2, {
-        sx: r * 1.1, sy: 0.5, sz: r * 0.4,
-        px: -r * 0.3, py: H * 0.32, rz: -0.2,
+        sx: r * 1.6, sy: 0.5, sz: r * 0.5,
+        px: -r * 0.4, py: H * 0.35, rz: -0.2,
     }));
     // Antennae (thin cylinders)
     const antMat = mat(color, { emissiveIntensity: 0.1 });
     body.add(m(g.cyl, antMat, {
-        sx: 0.5, sy: r * 0.45, sz: 0.5,
-        px: r * 0.12, py: H * 0.32, pz: -r * 0.5,
+        sx: 0.6, sy: r * 0.55, sz: 0.6,
+        px: r * 0.15, py: H * 0.35, pz: -r * 0.6,
         rx: -0.5, rz: 0.3,
     }));
     body.add(m(g.cyl, antMat.clone(), {
-        sx: 0.5, sy: r * 0.45, sz: 0.5,
-        px: -r * 0.12, py: H * 0.32, pz: -r * 0.5,
+        sx: 0.6, sy: r * 0.55, sz: 0.6,
+        px: -r * 0.15, py: H * 0.35, pz: -r * 0.6,
         rx: -0.5, rz: -0.3,
     }));
     return body;

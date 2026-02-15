@@ -326,10 +326,10 @@ body {
     height: 100%;
 }
 
-#terrain-canvas { z-index: 0; }
+#terrain-canvas { z-index: 0; visibility: hidden; }
 #game-canvas { z-index: 1; }
 #fx-canvas { z-index: 2; pointer-events: none; }
-#three-canvas { z-index: 0; display: none; }
+#three-canvas { z-index: 0; }
 #ui-canvas { z-index: 3; }
 
 /* ── Bottom Panel ──────────────────────────────────────── */
