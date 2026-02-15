@@ -181,7 +181,7 @@ export class WaveManager {
 
         // Mega boss every 2 waves starting at 25 — arrives mid-wave
         if (waveNum >= 25 && (waveNum - 25) % 2 === 0) {
-            const megaSchedule = [1, 2, 2, 3, 4, 5, 5, 6];
+            const megaSchedule = [1, 1, 2, 3, 4, 5, 5, 6];
             const megaIdx = Math.floor((waveNum - 25) / 2);
             const megaCount = megaIdx < megaSchedule.length ? megaSchedule[megaIdx] : 6;
             groups.push({
