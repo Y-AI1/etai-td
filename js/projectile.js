@@ -1,5 +1,5 @@
 import { CELL, CANVAS_W, CANVAS_H, TOWER_TYPES } from './constants.js';
-import { distance, angle } from './utils.js';
+import { angle } from './utils.js';
 
 export class Projectile {
     constructor(tower, target, isHeavy = false) {
@@ -135,11 +135,9 @@ export class Projectile {
             // Heavy round: armor shred + scorch zone
             if (this.isHeavy && this.armorShred > 0) {
                 const splashPx = splashRad * CELL;
-                for (const e of game.enemies.enemies) {
-                    if (!e.alive || e.flying) continue;
-                    if (distance(this, e) <= splashPx) {
-                        e.applyArmorShred(this.armorShred, this.shredDuration);
-                    }
+                const shredTargets = game.enemies.getEnemiesNear(this.x, this.y, splashPx);
+                for (const e of shredTargets) {
+                    e.applyArmorShred(this.armorShred, this.shredDuration);
                 }
                 // Spawn scorch zone
                 if (this.scorchDPS > 0) {
@@ -150,9 +148,8 @@ export class Projectile {
             // Pulse cannon knockback
             if (this.knockbackDist > 0) {
                 const kbSplashPx = splashRad * CELL;
-                for (const e of game.enemies.enemies) {
-                    if (!e.alive || e.flying || e.deathTimer >= 0) continue;
-                    if (distance(this, e) > kbSplashPx) continue;
+                const kbTargets = game.enemies.getEnemiesNear(this.x, this.y, kbSplashPx);
+                for (const e of kbTargets) {
                     e.applyKnockback(this.knockbackDist, this.towerId);
                 }
             }
@@ -191,16 +188,15 @@ export class Projectile {
 
     doSplash(dmg, game, radius) {
         const splashPx = (radius || this.splashRadius) * CELL;
-        const enemies = game.enemies.enemies;
-        for (const e of enemies) {
-            if (!e.alive || e.flying) continue;
-            const dist = distance(this, e);
-            if (dist <= splashPx) {
-                // Falloff: 100% at center, 50% at edge
-                const falloff = 1 - 0.5 * (dist / splashPx);
-                const dealt = e.takeDamage(dmg * falloff);
-                game.debug.onDamageDealt(dealt);
-            }
+        const nearby = game.enemies.getEnemiesNear(this.x, this.y, splashPx);
+        for (const e of nearby) {
+            const dx = e.x - this.x;
+            const dy = e.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            // Falloff: 100% at center, 50% at edge
+            const falloff = 1 - 0.5 * (dist / splashPx);
+            const dealt = e.takeDamage(dmg * falloff);
+            game.debug.onDamageDealt(dealt);
         }
     }
 
@@ -258,14 +254,11 @@ export class Projectile {
                     game.particles.spawnSpark(enemy.x, enemy.y, '#ffffff', 5);
                 }
 
-                // Find fork targets from this enemy
-                for (const e of game.enemies.enemies) {
-                    if (!e.alive || e.flying || hit.has(e.id)) continue;
-                    if (distance(enemy, e) <= chainPx) {
-                        // Draw lightning arc
-                        game.particles.spawnLightning(enemy.x, enemy.y, e.x, e.y);
-                        nextWave.push(e);
-                    }
+                // Find fork targets from this enemy using spatial grid
+                const nearby = game.enemies.getEnemiesNear(enemy.x, enemy.y, chainPx, { excludeIds: hit });
+                for (const e of nearby) {
+                    game.particles.spawnLightning(enemy.x, enemy.y, e.x, e.y);
+                    nextWave.push(e);
                 }
             }
             currentWave = nextWave;
@@ -276,13 +269,15 @@ export class Projectile {
 
     findChainTarget(from, hitSet, game) {
         const chainPx = this.chainRange * CELL;
+        const nearby = game.enemies.getEnemiesNear(from.x, from.y, chainPx, { excludeIds: hitSet });
         let best = null;
         let bestDist = Infinity;
 
-        for (const e of game.enemies.enemies) {
-            if (!e.alive || e.flying || hitSet.has(e.id)) continue;
-            const d = distance(from, e);
-            if (d <= chainPx && d < bestDist) {
+        for (const e of nearby) {
+            const dx = e.x - from.x;
+            const dy = e.y - from.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < bestDist) {
                 bestDist = d;
                 best = e;
             }

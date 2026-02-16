@@ -209,13 +209,15 @@ export class Hero {
     findAndAttack() {
         const game = this.game;
         const rangePx = HERO_STATS.range * CELL;
+        const nearby = game.enemies.getEnemiesNear(this.x, this.y, rangePx);
         let closest = null;
         let closestDist = Infinity;
 
-        for (const e of game.enemies.enemies) {
-            if (!e.alive || e.flying) continue;
-            const d = distance(this, e);
-            if (d <= rangePx && d < closestDist) {
+        for (const e of nearby) {
+            const dx = e.x - this.x;
+            const dy = e.y - this.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < closestDist) {
                 closestDist = d;
                 closest = e;
             }
@@ -262,10 +264,14 @@ export class Hero {
     checkContactDamage() {
         const game = this.game;
         const heroR = HERO_STATS.radius;
+        // Use a generous range for contact check — max enemy radius is ~34 (megaboss)
+        const contactRange = heroR + 40;
+        const nearby = game.enemies.getEnemiesNear(this.x, this.y, contactRange);
 
-        for (const e of game.enemies.enemies) {
-            if (!e.alive || e.flying) continue;
-            const d = distance(this, e);
+        for (const e of nearby) {
+            const dx = e.x - this.x;
+            const dy = e.y - this.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
             if (d < heroR + e.radius) {
                 const multi = HERO_STATS.contactMultipliers[e.type] || 1;
                 const dmg = HERO_STATS.contactBase * multi;
@@ -356,14 +362,16 @@ export class Hero {
 
         // Find nearest boss/megaboss in range
         const rangePx = HERO_STATS.executeRange * CELL;
+        const nearby = this.game.enemies.getEnemiesNear(this.x, this.y, rangePx);
         let closest = null;
         let closestDist = Infinity;
 
-        for (const e of this.game.enemies.enemies) {
-            if (!e.alive || e.flying) continue;
+        for (const e of nearby) {
             if (e.type !== 'boss' && e.type !== 'megaboss') continue;
-            const d = distance(this, e);
-            if (d <= rangePx && d < closestDist) {
+            const dx = e.x - this.x;
+            const dy = e.y - this.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < closestDist) {
                 closestDist = d;
                 closest = e;
             }

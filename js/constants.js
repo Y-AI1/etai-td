@@ -450,7 +450,7 @@ export const MAP_DEFS = {
 // ── Economy ────────────────────────────────────────────────
 export const STARTING_LIVES = 20;
 export const STARTING_GOLD = 300;
-export const KILL_GOLD_BONUS = 1.10;  // 10% bonus on all kill gold
+export const KILL_GOLD_BONUS = 1.21;  // 21% bonus on all kill gold
 export const SELL_REFUND = 0.6;       // 60% back
 export const INTEREST_RATE = 0.01;    // 1% between waves
 export const WAVE_BONUS_BASE = 25;

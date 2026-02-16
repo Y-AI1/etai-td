@@ -106,11 +106,9 @@ export class Tower {
         this.targetMode = (this.targetMode + 1) % TARGET_MODES.length;
     }
 
-    findTarget(enemies) {
+    findTarget(enemyManager) {
         const rangePx = this.range * CELL;
-        const inRange = enemies.filter(e =>
-            e.alive && !e.flying && distance(this, e) <= rangePx
-        );
+        const inRange = enemyManager.getEnemiesNear(this.x, this.y, rangePx);
 
         if (inRange.length === 0) return null;
 
@@ -141,7 +139,7 @@ export class Tower {
         this.glowPhase += dt * 3;
         this.spinPhase += dt * 4;
 
-        const target = this.findTarget(game.enemies.enemies);
+        const target = this.findTarget(game.enemies);
         if (target) {
             this.idleTime = 0;
         } else {

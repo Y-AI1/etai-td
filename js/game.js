@@ -500,17 +500,13 @@ export class Game {
                 this.scorchZones.splice(i, 1);
                 continue;
             }
-            // Damage enemies in zone (bypasses armor like burn)
-            for (const e of this.enemies.enemies) {
-                if (!e.alive || e.flying) continue;
-                const dx = e.x - zone.x;
-                const dy = e.y - zone.y;
-                if (dx * dx + dy * dy <= zone.radius * zone.radius) {
-                    e.hp -= zone.dps * dt;
-                    if (e.hp <= 0) {
-                        e.hp = 0;
-                        e.alive = false;
-                    }
+            // Damage enemies in zone (bypasses armor like burn) — uses spatial grid
+            const nearby = this.enemies.getEnemiesNear(zone.x, zone.y, zone.radius);
+            for (const e of nearby) {
+                e.hp -= zone.dps * dt;
+                if (e.hp <= 0) {
+                    e.hp = 0;
+                    e.alive = false;
                 }
             }
         }

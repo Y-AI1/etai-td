@@ -1,5 +1,4 @@
-import { ENEMY_TYPES, CELL, CANVAS_W, CANVAS_H, WAVE_MODIFIERS, GOLD_RUSH_MULTIPLIER, MIDBOSS_BOUNTY, KILL_GOLD_BONUS, ARMOR_BREAK_FACTOR } from './constants.js';
-import { distance } from './utils.js';
+import { ENEMY_TYPES, CELL, COLS, ROWS, CANVAS_W, CANVAS_H, WAVE_MODIFIERS, GOLD_RUSH_MULTIPLIER, MIDBOSS_BOUNTY, KILL_GOLD_BONUS, ARMOR_BREAK_FACTOR } from './constants.js';
 
 let nextEnemyId = 0;
 
@@ -350,6 +349,83 @@ export class EnemyManager {
     constructor(game) {
         this.game = game;
         this.enemies = [];
+        // Spatial grid for fast range queries — reuses game grid dimensions
+        this.spatialGrid = null;
+        this._initSpatialGrid();
+    }
+
+    _initSpatialGrid() {
+        this.spatialGrid = new Array(COLS);
+        for (let x = 0; x < COLS; x++) {
+            this.spatialGrid[x] = new Array(ROWS);
+            for (let y = 0; y < ROWS; y++) {
+                this.spatialGrid[x][y] = [];
+            }
+        }
+    }
+
+    buildSpatialGrid() {
+        // Clear all cells
+        for (let x = 0; x < COLS; x++) {
+            for (let y = 0; y < ROWS; y++) {
+                this.spatialGrid[x][y].length = 0;
+            }
+        }
+        // Bucket each living enemy by its grid cell
+        for (const e of this.enemies) {
+            if (e.deathTimer >= 0.35) continue; // about to be removed
+            const gx = Math.floor(e.x / CELL);
+            const gy = Math.floor(e.y / CELL);
+            // Clamp to grid bounds (enemies can be slightly OOB during flight)
+            const cx = gx < 0 ? 0 : gx >= COLS ? COLS - 1 : gx;
+            const cy = gy < 0 ? 0 : gy >= ROWS ? ROWS - 1 : gy;
+            this.spatialGrid[cx][cy].push(e);
+        }
+    }
+
+    /**
+     * Get enemies near a point using spatial grid lookup.
+     * @param {number} x - world x coordinate
+     * @param {number} y - world y coordinate
+     * @param {number} rangePx - range in pixels
+     * @param {object} [opts] - options
+     * @param {boolean} [opts.includeFlying=false] - include flying enemies
+     * @param {boolean} [opts.includeDying=false] - include enemies with deathTimer >= 0
+     * @param {Set} [opts.excludeIds] - enemy IDs to exclude (for chain lightning)
+     * @returns {Enemy[]}
+     */
+    getEnemiesNear(x, y, rangePx, opts) {
+        const includeFlying = opts?.includeFlying || false;
+        const includeDying = opts?.includeDying || false;
+        const excludeIds = opts?.excludeIds || null;
+
+        // Convert range to grid cell bounding box
+        const minGX = Math.max(0, Math.floor((x - rangePx) / CELL));
+        const maxGX = Math.min(COLS - 1, Math.floor((x + rangePx) / CELL));
+        const minGY = Math.max(0, Math.floor((y - rangePx) / CELL));
+        const maxGY = Math.min(ROWS - 1, Math.floor((y + rangePx) / CELL));
+
+        const rangeSq = rangePx * rangePx;
+        const result = [];
+
+        for (let gx = minGX; gx <= maxGX; gx++) {
+            for (let gy = minGY; gy <= maxGY; gy++) {
+                const cell = this.spatialGrid[gx][gy];
+                for (let i = 0; i < cell.length; i++) {
+                    const e = cell[i];
+                    if (!e.alive) continue;
+                    if (!includeFlying && e.flying) continue;
+                    if (!includeDying && e.deathTimer >= 0) continue;
+                    if (excludeIds && excludeIds.has(e.id)) continue;
+                    const dx = e.x - x;
+                    const dy = e.y - y;
+                    if (dx * dx + dy * dy <= rangeSq) {
+                        result.push(e);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     spawn(typeName, hpScale, modifier, useSecondary, pathIndex) {
@@ -376,18 +452,28 @@ export class EnemyManager {
     }
 
     update(dt) {
-        // Boss/megaboss enrage: when a boss or megaboss is the only living enemy, it enrages
-        const alive = this.enemies.filter(e => e.alive && e.deathTimer < 0);
-        if (alive.length === 1 && (alive[0].type === 'boss' || alive[0].type === 'megaboss') && !alive[0].enraged && !this.game.waves.spawning) {
-            const boss = alive[0];
-            boss.enraged = true;
-            boss.baseSpeed = Math.round(boss.baseSpeed * 1.5);
-            boss.baseArmor = Math.max(0, boss.baseArmor - 0.30);
-            boss.armor = Math.max(0, boss.armor - 0.30);
-            this.game.particles.spawnBigFloatingText(boss.x, boss.y - 30, 'ENRAGED!', '#ff4444');
+        // Boss/megaboss enrage: tracked via counter instead of .filter() every frame
+        let aliveCount = 0;
+        let lastBoss = null;
+        for (const e of this.enemies) {
+            if (e.alive && e.deathTimer < 0) {
+                aliveCount++;
+                if (e.type === 'boss' || e.type === 'megaboss') lastBoss = e;
+            }
+        }
+        if (aliveCount === 1 && lastBoss && !lastBoss.enraged && !this.game.waves.spawning) {
+            lastBoss.enraged = true;
+            lastBoss.baseSpeed = Math.round(lastBoss.baseSpeed * 1.5);
+            lastBoss.baseArmor = Math.max(0, lastBoss.baseArmor - 0.30);
+            lastBoss.armor = Math.max(0, lastBoss.armor - 0.30);
+            this.game.particles.spawnBigFloatingText(lastBoss.x, lastBoss.y - 30, 'ENRAGED!', '#ff4444');
             this.game.audio.playWaveStart();
             this.game.triggerShake(5, 0.25);
         }
+
+        // Build spatial grid from current positions — used by healers below
+        // and by hero/towers/projectiles/scorch zones that query after this update
+        this.buildSpatialGrid();
 
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const e = this.enemies[i];
@@ -468,17 +554,16 @@ export class EnemyManager {
                 this.game.particles.spawnDust(e.x, e.y + e.radius * 0.5, 1);
             }
 
-            // Healer logic (throttled to reduce O(n²))
+            // Healer logic — uses spatial grid for O(nearby) instead of O(all)
             if (e.alive && e.healRate > 0 && e.healRadius > 0) {
                 e.healCooldown -= dt;
                 if (e.healCooldown <= 0) {
-                    e.healCooldown = 0.1; // Check every 0.1s instead of every frame
-                    const healRange = e.healRadius * CELL;
-                    for (const other of this.enemies) {
-                        if (other === e || !other.alive) continue;
-                        if (distance(e, other) <= healRange) {
-                            other.heal(e.healRate * 0.1); // Heal 0.1s worth
-                        }
+                    e.healCooldown = 0.1;
+                    const healRangePx = e.healRadius * CELL;
+                    const nearby = this.getEnemiesNear(e.x, e.y, healRangePx);
+                    for (const other of nearby) {
+                        if (other === e) continue;
+                        other.heal(e.healRate * 0.1);
                     }
                 }
             }
@@ -486,10 +571,7 @@ export class EnemyManager {
     }
 
     getEnemiesInRange(x, y, range) {
-        const rangePx = range * CELL;
-        return this.enemies.filter(e =>
-            e.alive && !e.flying && distance({ x, y }, e) <= rangePx
-        );
+        return this.getEnemiesNear(x, y, range * CELL);
     }
 
     isEmpty() {
@@ -500,5 +582,6 @@ export class EnemyManager {
     reset() {
         this.enemies = [];
         nextEnemyId = 0;
+        this._initSpatialGrid();
     }
 }
