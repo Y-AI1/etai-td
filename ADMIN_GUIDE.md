@@ -167,7 +167,7 @@ Wave 6+ are procedurally generated via `WaveManager.generateWave()` in `wave.js`
 
 | Field | Meaning |
 |-------|---------|
-| `type` | Enemy type key: `grunt`, `runner`, `tank`, `healer`, `boss`, `swarm`, `flying` |
+| `type` | Enemy type key: `grunt`, `runner`, `tank`, `healer`, `boss`, `swarm`, `flying`, `dragonflyer`, `megaboss`, `quantumboss`, `wobbler` |
 | `count` | Number of enemies in this group |
 | `interval` | Seconds between spawns within the group |
 | `delay` | Seconds before this group starts spawning (relative to wave start) |
@@ -204,7 +204,10 @@ Defined in `WAVE_UNLOCKS` in constants.js. When `getEffectiveWave()` crosses a t
 ### Goldrush & Bosses
 
 - **Goldrush:** Every `GOLDRUSH_INTERVAL` (10) waves, all kills give 2x gold
-- **Bosses:** Every 5 waves from the procedural generator (wave 10, 15, 20, etc.)
+- **Bosses:** Every 5 waves (waves 5, 10, 15, 20)
+- **Megaboss:** Every 2 waves from wave 25-31 (count: 1→1→2→3), replaces regular boss
+- **Quantum Boss:** Every wave from wave 32+ (count: `floor((wave-31) * 1.5)`), replaces megaboss
+- **Dragon Flyer:** Every wave from wave 25+ (count: 1→8, +1 every 3 waves)
 
 ---
 
@@ -233,6 +236,10 @@ Defined in `ENEMY_TYPES`. Each enemy has:
 | Boss | 349 | 26 | 0.20 | High HP, slow |
 | Swarm | 5 | 105 | 0 | Cheap, fast, overwhelming in numbers |
 | Flying | 10 | 97 | 0 | Airborne sortie, untargetable while flying |
+| Dragon Flyer | 30 | 97 | 0 | Bigger flying enemy, wave 25+, 1→8 count |
+| Wobbler | 8 | 29 | 0 | Secondary-path intro enemy |
+| Megaboss | 392 | 58 | 0.25 | Waves 25-31 (every 2 waves), knockback immune |
+| Quantum Boss | 392 | 64 | 0.30 | Wave 32+, every wave, count escalates fast |
 
 ---
 
@@ -328,6 +335,7 @@ The hero unit (`hero.js`) is a player-controlled character that spawns at Wave 1
 |-----|---------|----------|--------|
 | Q | AoE Stun | 15s | Shocks all enemies in 3-cell radius for 1.5s |
 | E | Gold Magnet | 20s | 2x kill gold within 4-cell radius for 8s |
+| Z | Execute | 120s | Instant-kill nearest boss/megaboss/quantum boss within 15 cells. No target = no cooldown consumed. 0.8s animation with visual effects |
 
 **Contact damage:** Enemies deal 10 base damage per 0.5s tick when overlapping the hero, multiplied by type (Boss 3x, Tank 2x, Runner 0.8x, Swarm 0.5x, Healer 0.6x).
 
@@ -352,7 +360,7 @@ export const WAVE_BONUS_PER = 6;      // additional per wave number
 
 **Kill income:** `enemy.reward × 1.10` (hardcoded 10% bonus in `enemy.js`)
 
-**Starting gold:** Fixed 300g for all worlds (no level-based scaling).
+**Starting gold:** Per-map via `startingGold` in MAP_DEFS (Serpentine 300g, Citadel 400g, Creek/Gauntlet 1000g).
 
 ---
 
@@ -385,6 +393,7 @@ Per-environment animated particles rendered on the game canvas as a ground layer
 | Forest | Falling leaves | Fireflies |
 | Desert | Sand wisps | Dust puffs |
 | Lava | Rising embers | Bubbles |
+| Ruins | Dust motes | Spirit wisps |
 
 ---
 
@@ -430,7 +439,7 @@ Secondary paths are always carved (visible on map previews), but enemies only us
 
 ## 11. Persistence
 
-Uses `localStorage` with `td_` prefix:
+Uses `safeStorage` wrapper (try/catch for incognito/restricted environments) with `td_` prefix:
 
 | Key | Purpose |
 |-----|---------|
@@ -438,6 +447,8 @@ Uses `localStorage` with `td_` prefix:
 | `td_high_score` | Global best score (single value) |
 | `td_wave_debug_log_v2` | Append-only wave analysis log (JSON array) |
 | `td_achievements` | Achievement stats and unlocked set |
+| `td_use3d` | 3D mode toggle preference |
+| `td_atmosphere` | Selected atmosphere preset |
 
 ---
 
@@ -458,6 +469,7 @@ Uses `localStorage` with `td_` prefix:
 | WASD / Arrows | Move hero unit (wave 14+) |
 | Q | Hero AoE stun (wave 14+) |
 | E | Hero gold magnet (wave 14+) |
+| Z | Hero execute (instant-kill boss, wave 14+) |
 
 ### Admin Shortcuts (requires admin mode)
 

@@ -31,6 +31,7 @@ Open `http://localhost:8000` in a modern browser. There are no tests or linters 
 - Particle system is object-pooled (500 max) to avoid GC pressure
 - Audio is procedural via Web Audio API — no audio files. Context must init on user interaction
 - Grid coordinates are `gx, gy`; world pixel coordinates are `x, y`. Grid is 30×20 cells, 56px each
+- localStorage wrapped in `safeStorage` (utils.js) — try/catch for incognito/restricted environments. All modules import `safeStorage` instead of using raw `localStorage`
 - localStorage keys use `td_` prefix: `td_wave_record`, `td_high_score`, `td_wave_debug_log_v2`
 - String-keyed Maps/Sets use `"x,y"` format for grid lookups (towerGrid, pathCells) — not optimal for perf, but consistent
 - Enemy IDs are auto-incremented globally (`nextEnemyId`) and never reset — used for chain lightning hit tracking
@@ -42,7 +43,7 @@ Every world is an **endless wave-based survival run**. No levels — you play un
 - **Wave-based unlocks:** Towers, hero, and dual spawn unlock at wave thresholds mid-run via `WAVE_UNLOCKS` in constants.js
 - **HP scaling:** `getWaveHPScale(currentWave) * worldHpMultiplier * hpModifier` where `getWaveHPScale(w) = w * 1.11^w`. All maps use the same natural HP curve; `worldHpMultiplier` adjusts per-map (Citadel 0.5x, Creek/Gauntlet 1.1x).
 - Waves 1-5: hand-crafted intro waves. Wave 6+: procedural via `generateWave()`
-- **Special wave events:** Goldrush every 10 waves (2x kill gold). Boss every 5 waves (waves 5-20), replaced by Megaboss every 2 waves at waves 25-31 (count: 1→1→2→3), replaced by Quantum Boss every wave from wave 32+ (count: wave-31, scaled by 1.5x)
+- **Special wave events:** Goldrush every 10 waves (2x kill gold). Boss every 5 waves (waves 5-20), replaced by Megaboss every 2 waves at waves 25-31 (count: 1→1→2→3), replaced by Quantum Boss every wave from wave 32+ (count: wave-31, scaled by 1.5x). Dragon Flyers from wave 25+ (1→8 count, +1 every 3 waves)
 - **Starting gold:** Per-map via `startingGold` in MAP_DEFS (Serpentine 300g, Citadel 400g, Creek/Gauntlet 1000g)
 - **Auto-wave:** Enabled by default (`game.autoWave`), auto-starts next wave after 5s. Early-send bonus: max +30g, decays by 5g/sec waited
 - Wave record saved per map in `td_wave_record` localStorage key (JSON object `{mapId: wave}`)
@@ -132,6 +133,18 @@ Flying enemies begin appearing at per-map `flyingStartWave` (Serpentine 17, Cita
 - `enemy.flyProgress` (0→1) drives position along sine curve (base + perpendicular sine offset)
 - Visual: wing shape (`drawWing()` in renderer.js), shadow at ground level while airborne
 - **Wave count scaling:** `Math.min(20, 1 + Math.round((waveNum - flyStart) * 19 / 13))` — scales 1→20 flying enemies over 13 waves
+
+## Dragon Flyer (Wave 25+)
+
+Larger, tougher flying enemies that appear every wave from wave 25 onward. Same flight mechanics as regular flying enemies (spawn at castle, sine-wave flight, land at midpoint, walk to exit). Untargetable while airborne.
+
+- **Stats in `ENEMY_TYPES.dragonflyer`:** HP 30 (3x flying), speed 97 (same as flying), reward 60g, radius 22 (2x flying), 2 lives cost, red color (#c0392b)
+- Flight: same sine-wave path as flying, but 60px peak altitude (vs 40px for regular flyers)
+- Visual: same wing shape as flying (`drawWing()`) but bigger and red, with orange wing/body outlines for definition
+- 3D: uses same `flyingBody()` mesh factory as flying enemy
+- **Count scaling:** `Math.min(8, 1 + Math.floor((waveNum - 25) / 3))` — 1 at wave 25, +1 every 3 waves, max 8
+- Spawn interval: 1.2s between spawns (vs 0.8s for regular flyers)
+- Always uses primary path (like regular flyers)
 
 ## Dual Spawn Points (Per-Map)
 
@@ -223,6 +236,7 @@ Per-environment animated particles drawn on the game canvas (ground layer, befor
 | Swarm | 5 | 105 | 0% | 5g | 1 | Tiny, fast |
 | Wobbler | 8 | 29 | 0% | 30g | 1 | Secondary-path intro enemy (waves 16-20) |
 | Flying | 10 | 97 | 0% | 30g | 1 | Untargetable while airborne (110 px/s flight), scales 1→20 count over 13 waves |
+| Dragon Flyer | 30 | 97 | 0% | 60g | 2 | Wave 25+, bigger flying enemy (radius 22), 1→8 count over waves |
 | Megaboss | 392 | 58 | 25% | 400g | 5 | Waves 25-31 only (every 2 waves, count 1→3) |
 | Quantum Boss | 392 | 64 | 30% | 500g | 5 | Wave 32+, every wave, count escalates fast |
 
@@ -275,6 +289,25 @@ Four visual themes with different ground/path/obstacle rendering:
 - Ambient: dust motes + spirit wisps (blue-green)
 
 Per-map lighting darkness: Serpentine 0.25, Split Creek 0.10, Citadel 0.20, Gauntlet 0.35. All four use procedural `seedRand(gx, gy, i)` for deterministic decoration placement.
+
+## Poki SDK Integration
+
+The game integrates with the [Poki](https://poki.com) web game platform. SDK loaded via `<script>` tag in index.html. Wrapper object `poki` in game.js provides graceful fallback when SDK is unavailable (local dev, ad blockers).
+
+- **Lifecycle:** `poki.init()` + `gameLoadingFinished()` on boot, `gameplayStart()` on wave start / resume, `gameplayStop()` on game over / pause
+- **Commercial breaks:** `poki.commercialBreak()` shown on restart (between runs). Audio muted during ads via `audio.mute()` / `audio.unmute()`. Restart logic split into `restart()` (triggers ad) and `_doRestart()` (actual reset, called after ad completes)
+- **Three.js bundled locally:** `js/lib/three.module.js`, `js/lib/loaders/GLTFLoader.js`, `js/lib/utils/BufferGeometryUtils.js` — no CDN requests (Poki requirement). Import map in index.html maps `"three"` and `"three/addons/"` to local paths
+- **GLTF model probe:** `gltf-loader.js` sends a single HEAD request before loading tower models — if no `.glb` files exist, skips all loads to avoid 404 spam
+
+## Damage Tracking
+
+Per-run damage tracking for the game over screen, managed in game.js:
+
+- **`game.damageByType`:** Object mapping tower type string → total damage dealt. Reset per run
+- **`game.damageByTower`:** Object mapping tower ID → `{ type, damage }`. Tracks individual tower contributions
+- **`game.trackDamage(towerType, amount, towerId)`:** Called at all damage points — projectile hits (single, splash, chain, fork), tower aura pulses, burn ticks, scorch zones, hero execute
+- **Burn attribution:** `enemy.burnSource` (tower type) and `enemy.burnSourceId` (tower ID) stored on enemy, tracked in `EnemyManager.update()` before `e.update(dt)`
+- **Game over screen:** Shows "Damage by Type" (aggregated horizontal bars with tower colors) and "Top Towers" (top 8 individual towers, numbered when duplicates exist)
 
 ## Known Issues & Bugs
 
