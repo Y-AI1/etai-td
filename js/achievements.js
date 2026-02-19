@@ -1,4 +1,5 @@
 import { TOWER_TYPES } from './constants.js';
+import { safeStorage } from './utils.js';
 
 const STORAGE_KEY = 'td_achievements';
 
@@ -60,7 +61,7 @@ export class Achievements {
 
     load() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            const raw = safeStorage.getItem(STORAGE_KEY);
             if (raw) {
                 const data = JSON.parse(raw);
                 this.stats = data.stats || {};
@@ -75,7 +76,7 @@ export class Achievements {
 
     save() {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            safeStorage.setItem(STORAGE_KEY, JSON.stringify({
                 stats: this.stats,
                 unlocked: this.unlocked,
             }));

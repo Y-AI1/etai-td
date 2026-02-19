@@ -1,5 +1,5 @@
 import { STATE, CANVAS_W, CANVAS_H, HERO_STATS, MAP_DEFS, TOWER_TYPES, TOWER_LIGHT_DEFS, MAP_AMBIENT_DARKNESS, WAVE_UNLOCKS, SPEED_MULTIPLIERS, SPEED_MIN, SPEED_MAX, ATMOSPHERE_PRESETS, DUAL_SPAWN_WAVE } from './constants.js';
-import { hexToGL } from './utils.js';
+import { hexToGL, safeStorage } from './utils.js';
 import { GameMap } from './map.js';
 import { TowerManager } from './tower.js';
 import { EnemyManager } from './enemy.js';
@@ -19,6 +19,19 @@ import { Net, ENEMY_TYPE_IDX, IDX_ENEMY_TYPE } from './net.js';
 // Renderer3D loaded dynamically to avoid breaking the game if Three.js CDN is unavailable
 
 const FIXED_DT = 1 / 60; // 60 Hz physics
+
+// Poki SDK wrapper — all calls are no-ops if SDK isn't loaded (local dev, ad blocker)
+const poki = {
+    _sdk: typeof PokiSDK !== 'undefined' ? PokiSDK : null,
+    init() { return this._sdk ? this._sdk.init() : Promise.resolve(); },
+    gameLoadingFinished() { this._sdk?.gameLoadingFinished(); },
+    gameplayStart() { this._sdk?.gameplayStart(); },
+    gameplayStop() { this._sdk?.gameplayStop(); },
+    commercialBreak(onStart) {
+        if (!this._sdk) return Promise.resolve();
+        return this._sdk.commercialBreak(onStart);
+    },
+};
 
 export class Game {
     constructor(canvases) {
@@ -41,14 +54,15 @@ export class Game {
 
         // Per-run kill counter
         this.runKills = 0;
-        // Per-run damage tracking by tower type
+        // Per-run damage tracking by tower type and individual tower
         this.damageByType = {};
+        this.damageByTower = {};
 
         // Scorch zones (from Bi-Cannon heavy rounds)
         this.scorchZones = [];
 
         // Atmosphere override state
-        this.selectedAtmosphere = localStorage.getItem('td_atmosphere') || 'standard';
+        this.selectedAtmosphere = safeStorage.getItem('td_atmosphere') || 'standard';
         this.atmosphereColors = null;    // { ground, obstacle } or null (path always map-native)
         this.atmosphereParticles = null; // { primary, secondary } or null
 
@@ -88,6 +102,11 @@ export class Game {
 
         // Initial terrain render
         this.refreshTerrain();
+
+        // Poki SDK init
+        poki.init().then(() => {
+            poki.gameLoadingFinished();
+        });
     }
 
     async _init3D(canvases) {
@@ -211,6 +230,7 @@ export class Game {
         this.heroDeathsThisLevel = 0;
         this.runKills = 0;
         this.damageByType = {};
+        this.damageByTower = {};
         this.hero.reset();
 
         this.state = STATE.PLAYING;
@@ -220,12 +240,13 @@ export class Game {
 
         this.waves.startNextWave();
         this.ui.update();
+        poki.gameplayStart();
     }
 
     toggle3D() {
         if (!this.renderer3d) return;
         this.use3D = !this.use3D;
-        localStorage.setItem('td_use3d', this.use3D ? '1' : '0');
+        safeStorage.setItem('td_use3d', this.use3D ? '1' : '0');
         this._apply3DVisibility();
         if (this.use3D) {
             this.renderer3d.drawTerrain();
@@ -281,8 +302,10 @@ export class Game {
         if (this.state === STATE.PLAYING) {
             this.state = STATE.PAUSED;
             this.hero.clearMovement();
+            poki.gameplayStop();
         } else if (this.state === STATE.PAUSED) {
             this.state = STATE.PLAYING;
+            poki.gameplayStart();
         }
         this.ui.update();
     }
@@ -311,6 +334,7 @@ export class Game {
         this.audio.playGameOver();
         this.ui.update();
         this.ui.showScreen('game-over');
+        poki.gameplayStop();
     }
 
     onWaveThreshold(wave) {
@@ -388,6 +412,8 @@ export class Game {
         if (this.selectedMapId && this.waves.currentWave > 0) {
             Economy.setWaveRecord(this.selectedMapId, this.waves.currentWave);
         }
+        poki.gameplayStop();
+
         // Disconnect multiplayer
         if (this.isMultiplayer && this.net) {
             this.net.disconnect();
@@ -396,6 +422,16 @@ export class Game {
         this.net = null;
         this._syncFrameCounter = 0;
 
+        // Show commercial break (ad) before returning to menu
+        poki.commercialBreak(() => {
+            this.audio.mute();
+        }).then(() => {
+            this.audio.unmute();
+            this._doRestart();
+        });
+    }
+
+    _doRestart() {
         this.state = STATE.MENU;
         this._unlockScreenActive = false;
         this.selectedMapId = null;
@@ -408,6 +444,7 @@ export class Game {
         this._triggeredThresholds = new Set();
         this.runKills = 0;
         this.damageByType = {};
+        this.damageByTower = {};
         this.debug.reset();
         this.economy.reset();
         this.enemies.reset();
@@ -541,13 +578,19 @@ export class Game {
         }
     }
 
-    trackDamage(towerType, amount) {
+    trackDamage(towerType, amount, towerId) {
         if (amount <= 0) return;
         this.damageByType[towerType] = (this.damageByType[towerType] || 0) + amount;
+        if (towerId != null) {
+            if (!this.damageByTower[towerId]) {
+                this.damageByTower[towerId] = { type: towerType, damage: 0 };
+            }
+            this.damageByTower[towerId].damage += amount;
+        }
     }
 
-    addScorchZone(x, y, radius, dps, duration) {
-        this.scorchZones.push({ x, y, radius, dps, timer: duration, maxTimer: duration });
+    addScorchZone(x, y, radius, dps, duration, towerId) {
+        this.scorchZones.push({ x, y, radius, dps, timer: duration, maxTimer: duration, towerId });
     }
 
     updateScorchZones(dt) {
@@ -563,7 +606,7 @@ export class Game {
             for (const e of nearby) {
                 const scorchDmg = zone.dps * dt;
                 e.hp -= scorchDmg;
-                this.trackDamage('bicannon', scorchDmg);
+                this.trackDamage('bicannon', scorchDmg, zone.towerId);
                 if (e.hp <= 0) {
                     e.hp = 0;
                     e.alive = false;

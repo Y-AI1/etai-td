@@ -1,4 +1,5 @@
 import { TOWER_TYPES, getWaveHPScale } from './constants.js';
+import { safeStorage } from './utils.js';
 
 const STORAGE_KEY = 'td_wave_debug_log_v2';
 
@@ -19,12 +20,12 @@ export class WaveDebugger {
     }
 
     _save() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.log)); } catch {}
+        try { safeStorage.setItem(STORAGE_KEY, JSON.stringify(this.log)); } catch {}
     }
 
     _load() {
         try {
-            const data = localStorage.getItem(STORAGE_KEY);
+            const data = safeStorage.getItem(STORAGE_KEY);
             const raw = data ? JSON.parse(data) : [];
             // Drop legacy records missing required fields
             this.log = raw.filter(r => r.timestamp && r.world);

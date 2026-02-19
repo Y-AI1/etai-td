@@ -231,6 +231,7 @@ export class Hero {
 
         // Create pseudo-tower object for Projectile constructor
         const pseudoTower = {
+            id: 'hero',
             x: this.x,
             y: this.y,
             type: 'hero',
@@ -402,7 +403,7 @@ export class Hero {
         }
 
         // Instant kill — track damage before zeroing HP
-        this.game.trackDamage('hero', target.hp);
+        this.game.trackDamage('hero', target.hp, 'hero');
         target.hp = 0;
         target.alive = false;
 

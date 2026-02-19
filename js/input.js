@@ -1,5 +1,5 @@
 import { CELL, COLS, ROWS, STATE, TOWER_TYPES, SPEED_MIN, SPEED_MAX, CANVAS_W, CANVAS_H } from './constants.js';
-import { worldToGrid } from './utils.js';
+import { worldToGrid, safeStorage } from './utils.js';
 
 function buildTowerKeys(game) {
     const effectiveWave = game.getEffectiveWave ? game.getEffectiveWave() : 0;
@@ -443,8 +443,8 @@ export class InputHandler {
             case 'R':
                 if (this.game.adminMode) {
                     if (confirm(`Clear all records?`)) {
-                        localStorage.removeItem('td_wave_record');
-                        localStorage.removeItem('td_high_score');
+                        safeStorage.removeItem('td_wave_record');
+                        safeStorage.removeItem('td_high_score');
                         this.game.economy.record = 0;
                         this.game.economy.score = 0;
                     }

@@ -141,7 +141,7 @@ export class Projectile {
                 }
                 // Spawn scorch zone
                 if (this.scorchDPS > 0) {
-                    game.addScorchZone(this.x, this.y, splashPx * 0.8, this.scorchDPS, this.scorchDuration);
+                    game.addScorchZone(this.x, this.y, splashPx * 0.8, this.scorchDPS, this.scorchDuration, this.towerId);
                 }
             }
 
@@ -164,13 +164,13 @@ export class Projectile {
             if (this.target && this.target.alive) {
                 const dealt = this.target.takeDamage(dmg);
                 game.debug.onDamageDealt(dealt);
-                game.trackDamage(this.towerType, dealt);
+                game.trackDamage(this.towerType, dealt, this.towerId);
                 if (this.slowFactor > 0) {
                     this.target.applySlow(this.slowFactor, this.slowDuration);
                     game.particles.spawnSpark(this.x, this.y, '#5bbaff', 3);
                 }
                 if (this.burnDamage > 0) {
-                    this.target.applyBurn(this.burnDamage, this.burnDuration, this.towerType);
+                    this.target.applyBurn(this.burnDamage, this.burnDuration, this.towerType, this.towerId);
                 }
                 if (isCrit) {
                     game.particles.spawnFloatingText(this.x, this.y - 15, `CRIT!`, '#ff4444');
@@ -198,7 +198,7 @@ export class Projectile {
             const falloff = 1 - 0.5 * (dist / splashPx);
             const dealt = e.takeDamage(dmg * falloff);
             game.debug.onDamageDealt(dealt);
-            game.trackDamage(this.towerType, dealt);
+            game.trackDamage(this.towerType, dealt, this.towerId);
         }
     }
 
@@ -212,7 +212,7 @@ export class Projectile {
             hit.add(current.id);
             const dealt = current.takeDamage(currentDmg);
             game.debug.onDamageDealt(dealt);
-            game.trackDamage(this.towerType, dealt);
+            game.trackDamage(this.towerType, dealt, this.towerId);
 
             // Visual chain
             const nextTarget = this.findChainTarget(current, hit, game);
@@ -250,7 +250,7 @@ export class Projectile {
                 const hitDmg = currentDmg * (1 + this.overcharge * (totalHits - 1));
                 const dealt = enemy.takeDamage(hitDmg);
                 game.debug.onDamageDealt(dealt);
-                game.trackDamage(this.towerType, dealt);
+                game.trackDamage(this.towerType, dealt, this.towerId);
 
                 // Roll shock
                 if (this.shockChance > 0 && Math.random() < this.shockChance) {

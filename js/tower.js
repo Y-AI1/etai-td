@@ -222,7 +222,7 @@ export class Tower {
             if (!e.alive) continue;
             const dealt = e.takeDamage(this.damage);
             game.debug.onDamageDealt(dealt);
-            game.trackDamage(this.type, dealt);
+            game.trackDamage(this.type, dealt, this.id);
 
             // Apply slow
             if (this.slowFactor > 0) {

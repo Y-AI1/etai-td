@@ -35,3 +35,19 @@ export function hexToGL(hex) {
         parseInt(hex.slice(5, 7), 16) / 255,
     ];
 }
+
+// Safe localStorage wrapper for incognito/restricted environments (Poki requirement)
+export const safeStorage = {
+    getItem(key) {
+        try { return localStorage.getItem(key); } catch { return null; }
+    },
+    setItem(key, value) {
+        try { localStorage.setItem(key, value); } catch {}
+    },
+    removeItem(key) {
+        try { localStorage.removeItem(key); } catch {}
+    },
+    keys() {
+        try { return Object.keys(localStorage); } catch { return []; }
+    },
+};

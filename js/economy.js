@@ -1,4 +1,5 @@
 import { STARTING_LIVES, STARTING_GOLD } from './constants.js';
+import { safeStorage } from './utils.js';
 
 const RECORD_KEY = 'td_high_score';
 const WAVE_RECORD_KEY = 'td_wave_record';
@@ -12,11 +13,11 @@ export class Economy {
         this.record = Economy.getRecord();
 
         // One-time fresh start for wave-based system (v5)
-        if (!localStorage.getItem('td_v5_clean')) {
-            for (const key of Object.keys(localStorage)) {
-                if (key.startsWith('td_')) localStorage.removeItem(key);
+        if (!safeStorage.getItem('td_v5_clean')) {
+            for (const key of safeStorage.keys()) {
+                if (key.startsWith('td_')) safeStorage.removeItem(key);
             }
-            localStorage.setItem('td_v5_clean', '1');
+            safeStorage.setItem('td_v5_clean', '1');
         }
     }
 
@@ -36,7 +37,7 @@ export class Economy {
         this.score += points;
         if (this.score > this.record) {
             this.record = this.score;
-            localStorage.setItem(RECORD_KEY, this.record);
+            safeStorage.setItem(RECORD_KEY, this.record);
         }
     }
 
@@ -61,28 +62,28 @@ export class Economy {
     }
 
     static getRecord() {
-        return parseInt(localStorage.getItem(RECORD_KEY)) || 0;
+        return parseInt(safeStorage.getItem(RECORD_KEY)) || 0;
     }
 
     static clearRecord() {
-        localStorage.removeItem(RECORD_KEY);
+        safeStorage.removeItem(RECORD_KEY);
     }
 
     static getWaveRecord(mapId) {
-        const data = JSON.parse(localStorage.getItem(WAVE_RECORD_KEY) || '{}');
+        const data = JSON.parse(safeStorage.getItem(WAVE_RECORD_KEY) || '{}');
         return mapId ? (data[mapId] || 0) : data;
     }
 
     static setWaveRecord(mapId, wave) {
-        const data = JSON.parse(localStorage.getItem(WAVE_RECORD_KEY) || '{}');
+        const data = JSON.parse(safeStorage.getItem(WAVE_RECORD_KEY) || '{}');
         if (wave > (data[mapId] || 0)) {
             data[mapId] = wave;
-            localStorage.setItem(WAVE_RECORD_KEY, JSON.stringify(data));
+            safeStorage.setItem(WAVE_RECORD_KEY, JSON.stringify(data));
         }
     }
 
     static getBestRecord() {
-        const data = JSON.parse(localStorage.getItem(WAVE_RECORD_KEY) || '{}');
+        const data = JSON.parse(safeStorage.getItem(WAVE_RECORD_KEY) || '{}');
         let best = 0;
         for (const wave of Object.values(data)) {
             if (wave > best) best = wave;

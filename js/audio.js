@@ -33,6 +33,17 @@ export class Audio {
         }
     }
 
+    mute() {
+        this._wasMuted = this.muted;
+        this.muted = true;
+        if (this.masterGain) this.masterGain.gain.value = 0;
+    }
+
+    unmute() {
+        this.muted = this._wasMuted || false;
+        if (this.masterGain) this.masterGain.gain.value = this.muted ? 0 : 0.3;
+    }
+
     playTone(type, freqStart, freqEnd, duration, volume = 0.3) {
         this.ensureContext();
         if (!this.ctx || this.muted) return;

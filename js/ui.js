@@ -1,5 +1,6 @@
 import { TOWER_TYPES, TARGET_MODES, STATE, MAP_DEFS, COLS, ROWS, CELL, CELL_TYPE, CANVAS_W, CANVAS_H, EARLY_SEND_MAX_BONUS, EARLY_SEND_DECAY, VERSION, SPEED_MAX, ATMOSPHERE_PRESETS } from './constants.js';
 import { Economy } from './economy.js';
+import { safeStorage } from './utils.js';
 
 export class UI {
     constructor(game) {
@@ -253,7 +254,7 @@ export class UI {
             chip.style.setProperty('--atmo-glow', preset.themeColor + '66');
             chip.addEventListener('click', () => {
                 this.game.selectedAtmosphere = id;
-                localStorage.setItem('td_atmosphere', id);
+                safeStorage.setItem('td_atmosphere', id);
                 // Update chip highlight
                 container.querySelectorAll('.atmosphere-chip').forEach(c => c.classList.remove('selected'));
                 chip.classList.add('selected');
@@ -550,7 +551,7 @@ export class UI {
                 const idx = keys.indexOf(this.game.selectedAtmosphere);
                 const nextId = keys[(idx + 1) % keys.length];
                 this.game.selectedAtmosphere = nextId;
-                localStorage.setItem('td_atmosphere', nextId);
+                safeStorage.setItem('td_atmosphere', nextId);
                 this._updateAtmoBtn();
                 // Re-apply atmosphere if in-game
                 if (this.game.selectedMapId) {
@@ -606,8 +607,8 @@ export class UI {
             this.showScreen('reset');
         });
         document.getElementById('reset-confirm-btn')?.addEventListener('click', () => {
-            for (const key of Object.keys(localStorage)) {
-                if (key.startsWith('td_')) localStorage.removeItem(key);
+            for (const key of safeStorage.keys()) {
+                if (key.startsWith('td_')) safeStorage.removeItem(key);
             }
             this.game.achievements.stats = {};
             this.game.achievements.unlocked = {};
@@ -1165,11 +1166,36 @@ export class UI {
 
                 const formatDmg = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Math.round(n).toString();
 
+                // Per-tower damage entries (top 8)
+                const damageByTower = this.game.damageByTower || {};
+                const towerEntries = Object.entries(damageByTower)
+                    .filter(([, v]) => v.damage > 0)
+                    .sort((a, b) => b[1].damage - a[1].damage)
+                    .slice(0, 8);
+                const maxTowerDmg = towerEntries.length > 0 ? towerEntries[0][1].damage : 1;
+
+                // Number towers of the same type (e.g. "Fire Arrow #1", "#2")
+                const typeCounts = {};
+                const towerLabels = {};
+                for (const [id, info] of towerEntries) {
+                    typeCounts[info.type] = (typeCounts[info.type] || 0) + 1;
+                }
+                const typeSeq = {};
+                for (const [id, info] of towerEntries) {
+                    const name = towerNames[info.type] || info.type;
+                    if (typeCounts[info.type] > 1) {
+                        typeSeq[info.type] = (typeSeq[info.type] || 0) + 1;
+                        towerLabels[id] = `${name} #${typeSeq[info.type]}`;
+                    } else {
+                        towerLabels[id] = name;
+                    }
+                }
+
                 let dmgBarsHtml = '';
                 if (dmgEntries.length > 0) {
                     dmgBarsHtml = `
                         <div style="margin:0 auto 24px;max-width:520px;text-align:left">
-                            <div style="color:#aaa;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;text-align:center">Damage Breakdown</div>
+                            <div style="color:#aaa;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;text-align:center">Damage by Type</div>
                             ${dmgEntries.map(([type, dmg]) => {
                                 const color = towerColors[type] || '#888';
                                 const name = towerNames[type] || type;
@@ -1177,9 +1203,29 @@ export class UI {
                                 return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                                     <div style="width:90px;font-size:12px;color:${color};font-weight:700;text-align:right;flex-shrink:0">${name}</div>
                                     <div style="flex:1;height:16px;background:#1a1a2e;border-radius:3px;overflow:hidden">
-                                        <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;transition:width 0.3s"></div>
+                                        <div style="width:${pct}%;height:100%;background:${color};border-radius:3px"></div>
                                     </div>
                                     <div style="width:50px;font-size:12px;color:#ccc;font-weight:600;flex-shrink:0">${formatDmg(dmg)}</div>
+                                </div>`;
+                            }).join('')}
+                        </div>`;
+                }
+
+                let towerBarsHtml = '';
+                if (towerEntries.length > 0) {
+                    towerBarsHtml = `
+                        <div style="margin:0 auto 24px;max-width:520px;text-align:left">
+                            <div style="color:#aaa;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;text-align:center">Top Towers</div>
+                            ${towerEntries.map(([id, info]) => {
+                                const color = towerColors[info.type] || '#888';
+                                const label = towerLabels[id];
+                                const pct = (info.damage / maxTowerDmg) * 100;
+                                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                                    <div style="width:90px;font-size:11px;color:${color};font-weight:600;text-align:right;flex-shrink:0">${label}</div>
+                                    <div style="flex:1;height:14px;background:#1a1a2e;border-radius:3px;overflow:hidden">
+                                        <div style="width:${pct}%;height:100%;background:${color};opacity:0.8;border-radius:3px"></div>
+                                    </div>
+                                    <div style="width:50px;font-size:11px;color:#aaa;font-weight:600;flex-shrink:0">${formatDmg(info.damage)}</div>
                                 </div>`;
                             }).join('')}
                         </div>`;
@@ -1223,6 +1269,7 @@ export class UI {
                         </div>
                     </div>
                     ${dmgBarsHtml}
+                    ${towerBarsHtml}
                     <button class="unlock-btn" id="restart-btn" style="padding:16px 60px;font-size:22px">Try Again</button>
                 `;
                 document.getElementById('restart-btn').addEventListener('click', () => {
